@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.SchoolDormDao">
+    <resultMap id="list" type="com.colorfulword.smallbluewhale.domain.SchoolDorm">
+        <id property="schoolDormId" column="schoole_dorm_id"/>
+        <result property="schoolDormName" column="schoole_dorm_name"/>
+        <result property="schoolBuildingId" column="schoole_dorm_building_id"/>
+    </resultMap>
+    <select id="listBySchoolBuildingId" resultMap="list">
+        SELECT schoole_dorm.*
+        FROM schoole_dorm
+        WHERE schoole_dorm_building_id=#{schoolBuildingId}
+    </select>
+
+    <select id="get" resultMap="list">
+        SELECT schoole_dorm.*
+        FROM schoole_dorm
+        WHERE schoole_dorm_id=#{schoolDormId}
+    </select>
+
+    <select id="getByDorm" resultMap="list">
+        SELECT schoole_dorm.*
+        FROM schoole_dorm
+        WHERE schoole_dorm_name=#{schoolDormName}
+        AND schoole_dorm_building_id=#{schoolBuildingId}
+    </select>
+
+    <insert id="insert" parameterType="com.colorfulword.smallbluewhale.domain.SchoolDorm">
+        INSERT INTO schoole_dorm (schoole_dorm_name,
+        schoole_dorm_building_id)
+        VALUES (#{schoolDormName},
+        #{schoolBuildingId})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM schoole_dorm
+        WHERE schoole_dorm_id=#{schoolDormId}
+    </delete>
+
+</mapper>

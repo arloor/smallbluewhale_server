@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>小蓝鲸</title>
+    <link th:href="@{font/css/font-awesome.css}" rel="stylesheet" />
+    <link th:href="@{bootstrap/css/bootstrap.css}" rel="stylesheet" />
+    <link th:href="@{bootstrap/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{bootstrap/css/bootstrap-theme.min.css}" rel="stylesheet" />
+    <!--<link th:href="@{css/theme.css}" rel="stylesheet"/>-->
+    <!--<link th:href="@{css/premium.css}"  rel="stylesheet"/>-->
+    <script th:src="@{jquery-3.1.1.js}" type="text/javascript"></script>
+    <script th:src="@{bootstrap/js/bootstrap.js}" type="text/javascript"></script>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <script type="text/javascript" th:inline="javascript">
+
+
+        $(function() {
+            $('#myModal').on('hide.bs.modal', function () {
+                window.location.href = [[@{/dormitorylist}]];
+            });
+            var buildingSelect = document.getElementById("building");
+            var buildingDatas = [];
+            var userName = [[${#httpServletRequest.remoteUser}]];
+            if (userName ==='admin'){
+                var URL = [[@{/api/schoolbuilding/list}]];
+                $.ajax({	//使用JQuery内置的Ajax方法
+                    type : "get",	//post请求方式
+                    url : URL,
+                    dataType : "json",	//返回数据形式为json
+                    success : function(result) {
+                        console.log("result >>> " + JSON.stringify(result));
+                        if(result.code == 0){
+                            if (result.data.length > 0){
+                                buildingSelect.innerHTML = initOp(result.data,null);
+                                buildingDatas = result.data;
+                            }
+                        }
+                    },
+                    error : function(errorMsg) {
+                        //请求失败时执行该函数
+                        alert("失败 >>>> " + errorMsg);
+                    }
+                });
+            }else{
+                console.log("userData >>> " + JSON.stringify(userData));
+                if (window.localStorage.getItem("smallblueUserData")){
+                    var userData = JSON.parse(window.localStorage.getItem("smallblueUserData")) ;
+                    var text =  userData.schoolBuilding.campus + '-' +  userData.schoolBuilding.area+'-' +  userData.schoolBuilding.building;
+                    document.getElementById("building").innerHTML = '<option value="'+  userData.schoolBuilding.schoolBuildingId+ '">' + text + '</option>';
+                }else{
+                    var URL = [[@{/api/user/}]] + userName;
+                    $.ajax({	//使用JQuery内置的Ajax方法
+                        type: "get",	//post请求方式
+                        url: URL,
+                        dataType: "json",	//返回数据形式为json
+                        success: function (result) {
+                            console.log("result >>> " + JSON.stringify(result));
+                            if (result.code === 0){
+                                window.localStorage.setItem("smallblueUserData",result.data);
+                                var text =  result.data.schoolBuilding.campus + '-' +  result.data.schoolBuilding.area+'-' +  result.data.schoolBuilding.building;
+                                document.getElementById("building").innerHTML = '<option value="'+  result.data.schoolBuilding.schoolBuildingId+ '">' + text + '</option>';
+                            };
+                        },
+                        error: function (errorMsg) {
+                            //请求失败时执行该函数
+                        }
+                    });
+                }
+            }
+
+
+
+        initOp = function (datas,hintText) {
+            var str = '';
+            if (hintText){
+                str = "<option>" + hintText + "</option>";
+            }
+            $.each( datas, function(index, data)
+            {
+                var text = data.campus + '-' + data.area+'-' + data.building;
+                str +='<option value="'+ data.schoolBuildingId+ '">' + text + '</option>';
+                console.log('<option>' + text + '</option>');
+            });
+            return str;
+        };
+
+
+        commit = function () {
+            var dorm = document.getElementById("dorm");
+            if (checkCommite(document.getElementById("dorm-group"),dorm)){
+                var params = {
+                    "schoolBuildingId": parseInt(buildingSelect.options[buildingSelect.selectedIndex].value),
+                    "schoolDormName": dorm.value
+                };
+                doCommite(JSON.stringify(params));
+            }
+        };
+
+        doCommite = function (data11) {
+            console.log("doCommite >>> " + data11);
+            var url = [[@{/api/schooldorm/insert}]];
+            $.ajax({	//使用JQuery内置的Ajax方法
+                type : "post",	//post请求方式
+                url : url,
+                contentType: "application/json", //必须有
+                dataType: "json", //表示返回值类型，不必须
+                data:data11,
+                success : function(result) {
+                    if (result.code == 0){
+                        document.getElementById("dialog-body").innerHTML = "添加成功！";
+                        $('#myModal').modal('show');
+                    }else {
+                        document.getElementById("dialog-body").innerHTML = "宿舍已存在！";
+                        $('#myModal').modal('show');
+                    }
+                }, error : function(errorMsg) {
+                    //请求失败时执行该函数
+                    alert("失败 >>>> " + JSON.stringify(errorMsg));
+                }
+            });
+        };
+        checkCommite = function (pel,el) {
+            var canCommit = true;
+            var value = $.trim(el.value);
+            if (value.length > 0){
+                pel.setAttribute("class","form-group has-success");
+            }else{
+                pel.setAttribute("class","form-group has-error");
+                canCommit = false;
+            }
+            return canCommit;
+        };
+        });
+    </script>
+</head>
+<body>
+<div class="panel panel-default" style="background-color: #fff;" >
+    <p id="title" class="panel-heading no-collapse">录入宿舍</p>
+    <div class="panel-body" style="background-color: #fff;">
+        <div class="form-horizontal">
+            <div id="building-group" class="form-group">
+                <label class="col-sm-1 control-label" style="text-align: left">楼&nbsp;&nbsp;栋</label>
+                <div class="col-sm-11">
+                    <select id="building" class="form-control" >
+
+                    </select>
+                </div>
+            </div>
+            <div id="dorm-group" class="form-group">
+                <label class="col-sm-1 control-label" style="text-align: left">宿&nbsp;&nbsp;舍</label>
+                <div class="col-sm-11">
+                    <input id="dorm" class="form-control" type="text"  />
+                </div>
+            </div>
+            <button class="btn btn-primary btn-lg" style="width: 100%" onclick="commit();">添&nbsp;&nbsp;加</button>
+        </div>
+    </div>
+
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        温馨提示
+                    </h4>
+                </div>
+                <div id="dialog-body" class="modal-body">
+                    添加成功!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+</div>
+</body>
+</html>

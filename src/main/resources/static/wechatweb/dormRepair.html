@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link type="text/css" rel="stylesheet" href="css/my_real.css" />
+    <link type="text/css" rel="stylesheet" href="css/public.css" />
+    <title>宿舍报修</title>
+</head>
+<body>
+<div class="header">
+    <a onclick="window.history.go(-1)" class="back"><img src="images/back_gray.png" class="backImg" /></a>宿舍报修
+</div>
+
+
+<div class="content">
+    <form id="userAuthenForm" method="post" action="/smallbluewhale/api/dormRepair/insert" enctype="multipart/form-data" >
+    <h3>宿舍报修</h3>
+    <div class="register" id="infoDefault">
+        <script id="studentDetail" type="text/html">
+        <label class="info">           
+            <span class="sign">提交人</span>         
+            <input type="text" id="publishername" name="publishername" class="txt" value="<%=data[0].fullName%>" style=" background: #fff;" disabled/>
+            <input type="hidden" id="publisherId" name="repairUserId" class="txt" value="" />           
+        </label>
+        <label class="info">
+            <span class="sign">提交时间</span>
+            <input type="text" id="publishTime" name="publishTime" class="txt" value="" />
+        </label>
+        <label class="info">
+            <span class="sign">宿舍号</span>
+            <input type="text" id="ssid" name="ssid" class="txt" value="<%=data[0].schoolDorm.schoolBuildingId%>-<%=data[0].schoolDorm.schoolDormName%>" />
+            <input type="hidden" id="schoolDormId" name="repairDormId" class="txt" value="<%=data[0].schoolDorm.schoolDormId%>" /> 
+        </label>
+        </script>
+     </div>
+     <h3>失物信息</h3>
+     <div class="register"> 
+        <label class="info">
+            <span class="sign">损坏原因</span>
+            <input type="text" id="reason" name="reason" class="txt" placeholder="（必填）"   maxlength="200"/>
+        </label>  
+        <label class="info">
+            <span class="sign">损坏物品</span>
+            <input type="text" id="articleName" name="articleName" placeholder="（必填）"  class="txt"  maxlength="200"/>
+        </label>        
+        <label class="info">
+            <span class="sign">损坏描述</span>
+            <input type="text" id="desc" name="desc" class="txt" placeholder="（必填）"   maxlength="200"/>
+        </label>
+
+        </div>
+        <div class="register">   
+        <div class="infoPic">
+            <span class="sign">上传图片</span>
+            <span class="tips">点击下方图片区域上传</span>
+            <p class="img">
+                <input id="file1" name="file1" type="file" class="file"/>
+                <img src="images/add.png" class="file0" />
+                <span class="word">图片1</span>
+            </p>
+            <p class="img">
+                <input id="file2" name="file2" type="file" class="file"/>
+                <img src="images/add.png" class="file0" />
+                <span class="word">图片2</span>
+            </p>
+            <p class="img">
+                <input id="file3" name="file3" type="file" class="file"/>
+                <img src="images/add.png" class="file0" />
+                <span class="word">图片3</span>
+            </p>
+        </div>
+    </div>
+
+    <input type="submit" class="loginBtn" value="报 修 提 交" id="dormRepair" />
+    </form>
+</div>
+
+
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+<script type="text/javascript" src="js/baiduTemplate.js"></script>
+<script type="text/javascript" src="js/jquery-form.js"></script>
+<script type="text/javascript">
+var studentNo = localStorage["studentNo"];
+starFun();
+function starFun(){
+    var studentNo = localStorage["studentNo"];
+    console.log(studentNo); 
+    if(studentNo==undefined || studentNo=="" || studentNo==null){
+        login("请先登录");
+    }else{
+        $.ajax({
+            url: websiteUrl+"/api/userInfo/searchByUserNumber?userNumber="+studentNo, //通过学号查询接口
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json;charset=UTF-8", 
+            async: true, //默认异步调用 (false：同步)
+            success: function (data) 
+            {
+                result = eval(data.data);
+                if(result.length==0){
+                    openTips("不存在此学号或无输入！");
+                    setTimeout("top.location.href = 'regsave.html'",2000);
+                }else{
+                    $("#login").hide();
+                    var bt=baidu.template;
+                    var html=bt("studentDetail",data);       
+                    document.getElementById("infoDefault").innerHTML=html; 
+                    var myDate = new Date();
+                    var time=myDate.toLocaleDateString();
+                    var publishTime=document.getElementById("publishTime");
+                        publishTime.value=time; 
+
+                        $.ajax({
+                        url: websiteUrl+"/api/user/"+studentNo, //用户接口
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json;charset=UTF-8", 
+                        async: true, //默认异步调用 (false：同步)
+                        success: function (data) 
+                        {
+                            result = eval(data.data);
+                           $("#publisherId").val(result.userId);  
+                        },
+                        error: function (data) {
+                            openTips(data.message);
+                        }
+                    });        
+                }        
+            },
+            error: function (data) {
+                login("请先登录");
+            }
+        });
+    } 
+}
+
+//    图片预览
+    $(".file").change(function(){
+        var objUrl = getObjectURL(this.files[0]) ;
+        console.log("objUrl = "+objUrl) ;
+        if (objUrl) {
+            $(this).next(".file0").attr("src", objUrl) ;
+            var formdata = new FormData();    
+                formdata.append("file1", $(this)[0].files[0]);
+        }
+    });
+    function getObjectURL(file) {
+        var url = null ;
+        if (window.createObjectURL!=undefined) { // basic
+            url = window.createObjectURL(file) ;
+        } else if (window.URL!=undefined) { // mozilla(firefox)
+            url = window.URL.createObjectURL(file) ;
+        } else if (window.webkitURL!=undefined) { // webkit or chrome
+            url = window.webkitURL.createObjectURL(file) ;
+        }
+        return url ;
+    }
+    
+
+function dataURItoBlob(base64Data) {
+      var byteString; if (base64Data.split(',')[0].indexOf('base64') >= 0) byteString = atob(base64Data.split(',')[1]); elsebyteString = unescape(base64Data.split(',')[1]); var mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0]; var ia = new Uint8Array(byteString.length); for (var i = 0; i < byteString.length; i++) { ia[i] = byteString.charCodeAt(i); } return new Blob([ia], {type:mimeString}); 
+  } 
+
+
+ $(document).ready(function() {
+
+ var check = {
+  beforeSubmit: CheckhdFormg,// ajax提交之前的处理
+  success:  success// 处理之后的处理
+ };
+
+ $('#userAuthenForm').submit(function() {
+  $(this).ajaxSubmit(check);
+  return false;//非常重要，如果是false，则表明是不跳转在本页上处理，也就是ajax，如果是非false，则传统的form跳转。
+ });
+
+
+function success(){
+
+    openTips("提交成功");
+    setTimeout("top.location.href = 'dormRepairList.html'",2000);
+
+}
+
+function CheckhdFormg(formData){ 
+  if(formData[0].value== null || formData[0].value == ""){
+    openTips("服务器出错，请重试！");
+    return false;
+  }
+  if(formData[4].value == null || formData[4].value == ""){
+    openTips("请输入损坏物品");
+    return false;
+  }
+  if(formData[5].value == null || formData[5].value == ""){
+    openTips("请输入详细宿舍地址");
+    return false;
+  }
+  if(formData[6].value == null || formData[5].value == ""){
+    openTips("请输入损坏描述");
+    return false;
+  } 
+
+}
+
+})
+</script>
+</body>
+</html>

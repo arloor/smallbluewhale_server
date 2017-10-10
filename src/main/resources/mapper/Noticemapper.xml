@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.NoticeDao">
+    <resultMap id="list" type="com.colorfulword.smallbluewhale.domain.Notice">
+        <id property="noticeId" column="notice_id"/>
+        <result property="noticeTitle" column="notice_title"/>
+        <result property="noticeContent" column="notice_content"/>
+        <result property="noticeTime" javaType="java.sql.Timestamp" column="notice_time" jdbcType="TIMESTAMP" />
+        <result property="noticeToBuildingId" column="notice_to_building_id"/>
+        <result property="noticeToStudyInfoId" column="notice_to_study_info_id"/>
+        <result property="noticeToDormId" column="notice_to_dorm_id"/>
+        <result property="noticeToUserId" column="notice_to_user_id"/>
+    </resultMap>
+    <select id="list" resultMap="list">
+        SELECT notice.*
+        FROM notice
+        ORDER BY notice_id DESC;
+    </select>
+
+    <select id="listByToBuildingId" resultMap="list">
+        SELECT notice.*
+        FROM notice
+        WHERE notice_to_building_id=#{noticeToBuildingId}
+        ORDER BY notice_id DESC;
+    </select>
+
+    <insert id="insert" parameterType="com.colorfulword.smallbluewhale.domain.Notice">
+        INSERT INTO notice (notice_title,
+        notice_content,
+        notice_to_building_id,
+        notice_to_study_info_id,
+        notice_to_dorm_id,
+        notice_to_user_id)
+        VALUES (#{noticeTitle},
+        #{noticeContent},
+        #{noticeToBuildingId},
+        #{noticeToStudyInfoId},
+        #{noticeToDormId},
+        #{noticeToUserId})
+    </insert>
+</mapper>

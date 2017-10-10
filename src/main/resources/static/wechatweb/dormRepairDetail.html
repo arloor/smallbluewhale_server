@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link rel="stylesheet" type="text/css" href="css/public.css" />
+    <script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.flexslider-min.js"></script>
+    <title>详情信息</title>
+</head>
+<body>
+<div class="header">
+    <a onclick="window.history.go(-1)" class="back"><img class="backImg" src="images/back_gray.png"></a>详情信息
+</div>
+
+<div class="block_home_slider">
+    <div id="home_slider" class="flexslider">
+        <ul class="slides" id="sliderList">
+            
+        </ul>
+    </div>
+</div>
+
+<div id="addContent"></div>
+<script id="Detail" type="text/html">
+<div class="content">
+    <h3>报修信息</h3>
+    <ul class="list">
+        <li class="listInfo">
+            <span class="listLeft">损坏物品</span>
+            <span class="listRight"><%=data[index].articleName%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">报修时间</span>
+            <span class="listRight"><%=new Date(data[index].repairTime).Format("yyyy-MM-dd")%></span>            
+        </li>
+        <li class="listInfo" style="display: none;">
+            <span class="listLeft">宿舍信息</span>
+            <span class="listRight"><%=data[index].schoolDorm.schoolBuildingId%>-<%=data[index].schoolDorm.schoolDormName%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">宿舍信息</span>
+            <span class="listRight"><%=data[index].reason%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">损坏描述</span>
+            <span class="listRight"><%=data[index].desc%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">操作状态</span>
+            <% if(data[index].repairStatus==0){%>
+            <span class="listRight">未查看</span>
+            <%}else{%>
+            <span class="listRight">已确认</span>
+            <%}%>
+        </li>
+    </ul>
+</div>
+</script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+<script type="text/javascript" src="js/baiduTemplate.js"></script>
+<script type="text/javascript">
+    function GetQueryString(name)
+    {
+         var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+         var r = window.location.search.substr(1).match(reg);
+         if(r!=null)return  decodeURI(r[2]); return null;
+    }
+    var index=GetQueryString("index");
+    var userInfoId=GetQueryString("repairUserId");
+$.ajax({
+    url: websiteUrl+"/api/dormRepair/listByUserId?repairUserId="+userInfoId, //当前用户报修详情接口
+    dataType: "json",
+    type: "GET",
+    contentType: "application/json;charset=UTF-8", 
+    async: true, //默认异步调用 (false：同步)
+    success: function (data) 
+    {
+        data = eval(data);
+        var pic=data.data[index].pics;
+        var img=replaceString(pic); 
+        if(img.length<1||img.length==1){
+            var imgs='<li class="nullimg">没有图片</li>'; 
+            $('#sliderList').append(imgs);           
+        }else{
+            for(var i=0;i<img.length;i++){
+             var imgs='<li><div class="slide"><img src="'+websiteUrl+'/'+img[i]+'"></div></li>';
+             $('#sliderList').append(imgs);
+             } 
+            
+            $('#home_slider').flexslider({
+                animation : 'slide',
+                controlNav : true,
+                directionNav : true,
+                animationLoop : true,
+                slideshow : false,
+                useCSS : false
+            });
+        
+                        
+        }
+        var bt=baidu.template;
+        //最简使用方法
+        var html=bt("Detail",data);
+        //渲染       
+        document.getElementById("addContent").innerHTML=html; 
+           
+    },
+    error: function (data) {
+        openTips("服务器出错，请重试！");
+    }
+}); 
+
+function getQueryString(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    var r = window.location.search.substr(1).match(reg);
+    if ( r != null ){
+       return unescape(r[2]);
+    }else{
+       return null;
+    } 
+ }   
+</script>
+</body>
+</html>
+

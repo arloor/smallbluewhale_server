@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.SchoolStudyInfoDao">
+    <resultMap id="list" type="com.colorfulword.smallbluewhale.domain.SchoolStudyInfo">
+        <id property="studyInfoId" column="school_study_info_id"/>
+        <result property="campus" column="campus"/>
+        <result property="department" column="department"/>
+    </resultMap>
+    <select id="list" resultMap="list">
+        SELECT school_study_info.*
+        FROM school_study_info
+    </select>
+
+    <insert id="insert" parameterType="com.colorfulword.smallbluewhale.domain.SchoolStudyInfo">
+        INSERT INTO school_study_info (campus,
+        department)
+        VALUES (#{campus},
+        #{department})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM school_study_info
+        WHERE school_study_info_id=#{studyInfoId}
+    </delete>
+
+    <update id="update">
+        UPDATE school_study_info SET
+        campus=#{campus},
+        department=#{department}
+        WHERE school_study_info_id=#{studyInfoId}
+    </update>
+</mapper>

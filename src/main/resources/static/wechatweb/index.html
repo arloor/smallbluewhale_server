@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link rel="stylesheet" type="text/css" href="css/public.css" />
+    <script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.flexslider-min.js"></script>
+    <title>南大官网</title>
+</head>
+<body>
+<div class="block_home_slider">
+    <div id="home_slider" class="flexslider">
+        <ul class="slides" id="sliderList">
+           <li><div class="slide"><img src="images/banner.jpg"></div></li>
+           <li><div class="slide"><img src="images/banner.jpg"></div></li>  
+        </ul>
+    </div>
+</div>
+
+<div class="content content_index" >
+    <h3>常用网址</h3>
+    <ul class="list" id="common">
+    </ul>
+    <h3>生活相关</h3>
+    <ul class="list" id="life">
+    </ul>
+    <h3>其他相关</h3>
+    <ul class="list" id="othor">
+    </ul>      
+</div>
+
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+<script type="text/javascript">
+
+$.ajax({
+    url: websiteUrl+"/api/site/list", //常用网址接口
+    type: 'GET',
+    async: true, //默认异步调用 (false：同步)
+    success: function (data) 
+    {
+        data = eval(data);
+        result =data.data;
+        
+        $.each(result, function(e, ele) { 
+            if(ele.group=="常用网址"){
+                
+                var list='<li class="use3w"><a href="'+ele.url+'"><img src="'+websiteUrl+'/'+ele.icon+'"><p>'+ele.name+'</p></a></li>';
+                $("#common").html($("#common").html()+list);
+            }else if(ele.group=="备用网址"){
+                
+                var list='<li class="use3w"><a href="'+ele.url+'"><img src="'+websiteUrl+'/'+ele.icon+'"><p>'+ele.name+'</p></a></li>';
+                $("#life").html($("#life").html()+list);
+            }else{
+                var list='<li class="use3w"><a href="'+ele.url+'"><img src="'+websiteUrl+'/'+ele.icon+'"><p>'+ele.name+'</p></a></li>';
+                $("#othor").html($("#othor").html()+list);
+            }
+        })
+
+    },
+    error: function (data) {
+        data = eval(data);
+        openTips("服务器出错，请重试！")
+    }
+});
+
+$('#home_slider').flexslider({
+    animation : 'slide',
+    controlNav : true,
+    directionNav : true,
+    animationLoop : true,
+    slideshow : false,
+    useCSS : false
+});
+</script>
+</body>
+</html>
+

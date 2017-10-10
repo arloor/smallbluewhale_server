@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link type="text/css" rel="stylesheet" href="css/invitation.css" />
+    <link type="text/css" rel="stylesheet" href="css/public.css" />
+    <title>失物招领</title>
+    <style>
+     .menu p{ width: 25%; }
+    </style>
+</head>
+<body>
+<div class="top">
+    <div class="header">
+        <a onclick="window.history.go(-1)" class="back"><img src="images/back_gray.png" class="backImg" /></a><h1>失物招领</h1>
+    </div>
+
+     <div class="menu">
+        <p class="choose"><a href="lostKz.html"><span class="state chooseState">卡证</span></a></p>
+        <p class="choose"><a href="lostSj.html"><span class="state">书籍</span></a></p>
+        <p class="choose"><a href="lostYb.html"><span class="state">衣包</span></a></p>
+        <p class="choose"><a href="lostQt.html"><span class="state">其他</span></a></p>
+    </div>
+</div>
+
+
+<div class="empty" style="height: 89px;"></div>
+<div class="content">
+    <div class="notUsed">
+        <ul class="list" >
+    
+        </ul>
+
+        <p class="more">点击加载更多</p>
+    </div>
+</div>
+<a href="lost.html" class="tabType">按校区查询</a>
+</body>
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+<script type="text/javascript" src="js/loadmore.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function(){    
+    $.loadmore.get(getData, {
+        scroll: false,  //默认是false,是否支持滚动加载
+        offset:0,
+        size:5,  //默认是10
+        typeTab: "卡证", //自定义参数，可选，示例里没有用到
+    });
+
+    function getData(config, offset,size,typeTab){
+
+        config.isAjax = true;
+
+        $.ajax({
+            type: 'GET',
+            url: websiteUrl + "/api/lostArticle/listByType?lostArticleType="+typeTab,
+            dataType: 'json',
+            contentType:"application/json;charset=UTF-8",
+            success: function(reponse){            
+                config.isAjax = false;
+                var data = reponse.data;
+                var sum = reponse.data.length;             
+                var result = '';
+                
+                /************业务逻辑块：实现拼接html内容并append到页面*****************/
+                
+                /*如果剩下的记录数不够分页，就让分页数取剩下的记录数
+                * 例如分页数是5，只剩2条，则只取2条
+                *
+                * 实际MySQL查询时不写这个
+                */
+                if(sum - offset < size ){
+                    size = sum - offset;
+                }
+
+                
+                /*使用for循环模拟SQL里的limit(offset,size)*/
+                for(var i=offset; i< (offset+size); i++){ 
+                    var time=new Date(data[i].publishTime).Format("yyyy-MM-dd");
+                    var pic=data[i].lostArticlePic;
+                    if(pic){
+                        var img=replaceString(pic);
+                        var imgUrl=websiteUrl+'/'+img[0];
+                    }else{
+                         var imgUrl="images/lz.png";
+                        
+                    }  
+
+                    result +='<li>'+
+                                 '<div class="list_img" ><img src="'+imgUrl+'"></div>'+
+                                 '<div class="list_txt">'+
+                                   '<h2>'+ data[i].lostArticleName +'<span>'+time+'</span></h2>'+
+                                   '<p>'+ data[i].campus+'-'+data[i].position+'</p>'+
+                                 '</div>'+  
+                                 '<a href="lostDetailType.html?index='+i+'&lostArticleType='+typeTab+'">查看详情</a>'+
+                              '</li>';
+                }
+
+                $('.list').append(result);
+
+                /*******************************************/
+                
+                /*隐藏more*/
+                if ( (offset + size) >= sum){
+                    $(".more").hide();
+                    config.isEnd = true; /*停止滚动加载请求*/
+                    //提示没有了
+                }else{
+                    $(".more").show();
+                }
+
+            },
+            error: function(error){
+                openTips(error.message);
+            }
+        });
+
+    }
+
+    
+
+});
+
+
+
+
+</script>
+</html>
+
+

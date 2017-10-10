@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link type="text/css" rel="stylesheet" href="css/my_real.css" />
+    <link type="text/css" rel="stylesheet" href="css/public.css" />
+    <title>注册信息</title>
+</head>
+<body>
+<div class="header">
+    <a onclick="window.history.go(-1)" class="back"><img src="images/back_gray.png" class="backImg" /></a>注册信息
+</div>
+<div class="content">
+    <div class="register">
+        <label class="info">
+                <span class="sign">微信号</span>            
+                <input type="text" id="weChat" name="weChat" class="txt" placeholder="（必填）" />
+        </label>
+    <form id="userAuthenForm" method="post" action="/smallbluewhale/api/userInfo/insert" enctype="multipart/form-data" >
+        <label class="info">
+            <span class="sign">学号</span>            
+            <input type="text" id="userNumber" name="userNumber" class="txt" placeholder="（必填）" />
+        </label>
+        <label class="info">
+            <span class="sign">姓名</span>
+            <input type="text" id="fullName" name="fullName" class="txt" value="" placeholder="（必填）" />
+        </label> 
+        <label class="info">
+            <span class="sign">性别</span>
+            <select id="sex" name="sex" class="txt txtsc">
+               <option selected>(选填)</option>             
+               <option  value="男">男</option>
+               <option value="女">女</option>
+            </select>
+        </label>
+        <label class="info">
+            <span class="sign">联系方式</span>
+            <input type="text" id="mobile" name="mobile" class="txt" placeholder="（必填）" value="" maxlength="11"/>
+        </label>
+        <label class="info">
+            <span class="sign">院系</span>
+            <select id="schoolStudyId" name="schoolStudyId" class="txt txtsc">
+               <option disabled selected>请选择院系</option>	            
+                
+            </select>
+        </label>
+        <label class="info">
+            <span class="sign">楼栋</span>
+            <select id="schoolBuildingId" name="schoolBuildingId" class="txt txtsc">
+               <option disabled selected>请选择楼栋</option>             
+                
+            </select>
+        </label>
+        <label class="info">
+            <span class="sign">宿舍号</span>
+            <select id="schoolDormId" name="schoolDormId" class="txt txtsc">
+               <option disabled selected>请选择宿舍号</option>	            
+                
+            </select>            
+        </label>
+        <label class="info">
+            <span class="sign">年级</span>
+            <select id="grade" name="grade" class="txt txtsc">
+               <option disabled selected>请选择年级</option>                
+               <option value="大一">大一</option>
+               <option value="大二">大二</option> 
+               <option value="大三">大三</option>  
+               <option value="大四">大四</option> 
+               <option value="研一">研一</option> 
+               <option value="研二">研二</option> 
+               <option value="研三">研三</option> 
+               <option value="研四">研四</option>
+               <option value="博士">博士</option> 
+            </select>  
+            
+        </label>
+        <div class="infoPic">
+            <span class="sign">上传头像</span>
+            <span class="tips"></span>
+            <p class="img">               
+                <input id="file" name="file" type="file" class="file"/>
+                <img src="images/add.png" class="file0" />
+            </p>
+        </div>
+    </div>
+    <div class="loginBtnTab">
+    <input type="submit" class="loginBtn" value="立 即 注 册" id="regsave" />
+    <input type="button" class="loginBtn" value="重 新 登 录" id="reset" onclick="login('重新输入')" />
+    </div>
+    </form>
+</div>
+
+
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/baiduTemplate.js"></script>
+<script type="text/javascript" src="js/regsave.js"></script>
+<script type="text/javascript" src="js/jquery-form.js"></script>
+<script type="text/javascript">
+
+$.ajax({
+    url: websiteUrl+"/api/school/list", //院系接口
+    dataType: "json",
+    type: "GET",
+    contentType: "application/json;charset=UTF-8", 
+    async: true, //默认异步调用 (false：同步)
+    success: function (data) 
+    {
+        result = eval(data.data);
+        $.each(result, function(e, ele) { 
+            var list0=' <option value="'+ele.studyInfoId+'">'+ele.campus+'-'+ele.department+'</option>';
+            $("#schoolStudyId").append(list0);
+                                          
+        })  
+    },
+    error: function (data) {
+        openTips(data.message);
+    }
+}); 
+
+ $.ajax({
+    url: websiteUrl+"/api/schoolbuilding/list", //楼栋接口
+    dataType: "json",
+    type: "GET",
+    contentType: "application/json;charset=UTF-8", 
+    async: true, //默认异步调用 (false：同步)
+    success: function (data) 
+    {
+        result = eval(data.data);
+        $.each(result, function(e, ele) { 
+            var list1=' <option value="'+ele.schoolBuildingId+'">'+ele.campus+'-'+ele.area+'-'+ele.building+'</option>';
+            $("#schoolBuildingId").append(list1);
+            })
+
+        $("#schoolBuildingId").change( function(){
+               var sid=$(this).find("option:selected").val();
+               $("#schoolDormId").html('');
+                $.ajax({
+                    url: websiteUrl+"/api/schooldorm/listBySchoolBuildingId?schoolBuildingId="+sid, //宿舍接口
+                    dataType: "json",
+                    type: "GET",
+                    contentType: "application/json;charset=UTF-8", 
+                    async: true, //默认异步调用 (false：同步)
+                    success: function (data) 
+                    {
+                        result = eval(data.data);
+
+                        $.each(result, function(e, ele) { 
+                            var list2=' <option value="'+ele.schoolDormId+'">'+ele.schoolDormName+'</option>';
+                            $("#schoolDormId").append(list2);
+                                                          
+                        })  
+                    },
+                    error: function (data) {
+                        openTips(data.message);
+                    }
+            }); 
+
+        })  
+    },
+    error: function (data) {
+        openTips(data.message);
+    }
+}); 
+
+
+//    图片预览
+    $(".file").change(function(){
+        var objUrl = getObjectURL(this.files[0]) ;
+        if (objUrl) {
+            $(this).next(".file0").attr("src", objUrl) ;
+        }
+    });
+
+
+    function getObjectURL(file) {
+        var url = null ;
+        if (window.createObjectURL!=undefined) { // basic
+            url = window.createObjectURL(file) ;
+        } else if (window.URL!=undefined) { // mozilla(firefox)
+            url = window.URL.createObjectURL(file) ;
+        } else if (window.webkitURL!=undefined) { // webkit or chrome
+            url = window.webkitURL.createObjectURL(file) ;
+        }
+        return url ;
+    }
+    
+    function dataURItoBlob(base64Data) {
+      var byteString; if (base64Data.split(',')[0].indexOf('base64') >= 0) byteString = atob(base64Data.split(',')[1]); elsebyteString = unescape(base64Data.split(',')[1]); var mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0]; var ia = new Uint8Array(byteString.length); for (var i = 0; i < byteString.length; i++) { ia[i] = byteString.charCodeAt(i); } return new Blob([ia], {type:mimeString}); 
+    }
+
+$(document).ready(function() {
+
+ var check = {
+  beforeSubmit: CheckhdFormg,// ajax提交之前的处理
+  success:  success// 处理之后的处理
+ };
+
+ $('#userAuthenForm').submit(function() {
+  $(this).ajaxSubmit(check);
+  return false;//非常重要，如果是false，则表明是不跳转在本页上处理，也就是ajax，如果是非false，则传统的form跳转。
+ });
+
+
+function success(){
+
+    
+    var studentNo2=document.getElementById("userNumber").value;
+    window.localStorage.studentNo=studentNo2;
+
+    var data={
+      "userNumber": $("#userNumber").val(),
+      "weChat": $("#weChat").val()
+    }
+
+    data=JSON.stringify(data);
+    $.ajax({
+        url: websiteUrl+"/api/user/bindWeChat", //绑定微信接口
+        dataType: "json",
+        type: "POST",
+        contentType: "application/json",
+        processData: false, 
+        async: true, //默认异步调用 (false：同步)
+        data:data,
+        success: function (data) 
+        { 
+            openTips("注册成功");
+            console.log(data);
+            setTimeout("top.location.href = 'myinfor.html'",2000);
+        },
+        error: function (data) {
+            openTips(data.message);
+        }
+    }); 
+
+}
+
+function CheckhdFormg(formData){
+  var weChat=document.getElementById("weChat").value;
+  if(weChat== null || weChat == ""){
+    openTips("请输入微信号");
+    return false;
+  }
+  if(formData[0].value== null || formData[0].value == ""){
+    openTips("请输入学号");
+    return false;
+  }
+   if(formData[1].value== null || formData[1].value == ""){
+    openTips("请输入姓名");
+    return false;
+  }
+   if(formData[3].value== null || formData[3].value == ""){
+    openTips("请输入联系方式");
+    return false;
+  }
+  if(formData[4].value == "请选择院系"){
+    openTips("请选择院系");
+    return false;
+  }
+  if(formData[5].value == "请选择楼栋"){
+    openTips("请选择楼栋");
+    return false;
+  }
+  if(formData[6].value == "请选择宿舍号"){
+    openTips("请选择宿舍号");
+    return false;
+  }
+  if(formData[7].value == "请选择年级"){
+    openTips("请选择年级");
+    return false;
+  }
+ 
+
+}
+
+})
+
+//输入有误调取函数
+function starFun(){
+    var studentNo = localStorage["studentNo"];
+    console.log(studentNo); 
+    if(studentNo==undefined || studentNo==null || studentNo==""){
+        login("请先登录");
+    }else{
+        $.ajax({
+            url: websiteUrl+"/api/userInfo/searchByUserNumber?userNumber="+studentNo, //通过学号查询接口
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json;charset=UTF-8", 
+            async: true, //默认异步调用 (false：同步)
+            success: function (data) 
+            {
+                result = eval(data.data);
+                if(result.length==0){
+                    openTips("不存在此学号或无输入！");
+                    setTimeout("top.location.href = 'regsave.html'",2000);
+                }else{
+                    $("#login").hide();
+                    openTips("登录成功");
+                    window.localStorage.userInfoId=result[0].userInfoId;
+                    setTimeout("top.location.href = 'myinfor.html'",2000);
+                }
+
+            },
+            error: function (data) {
+                login("请先登录");
+            }
+        });
+    } 
+}
+</script>
+</body>
+</html>

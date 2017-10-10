@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.DormRepairDao">
+    <resultMap id="list" type="com.colorfulword.smallbluewhale.domain.DormRepair">
+        <id property="repairId" column="repair_id"/>
+        <result property="repairUserId" column="repair_user_id"/>
+        <result property="repairTime" javaType="java.sql.Timestamp" column="repair_time" jdbcType="TIMESTAMP" />
+        <result property="repairSchoolBuildingId" column="repair_building_id"/>
+        <result property="repairDormId" column="repair_dorm_id"/>
+        <result property="articleName" column="article_name"/>
+        <result property="reason" column="reason"/>
+        <result property="desc" column="desc"/>
+        <result property="pics" column="dorm_repair_pics"/>
+        <result property="repairStatus" column="repair_status"/>
+        <result property="dormRepairReply" column="dorm_repair_reply"/>
+        <association property="schoolDorm" javaType="com.colorfulword.smallbluewhale.domain.SchoolDorm">
+            <id property="schoolDormId" column="schoole_dorm_id"/>
+            <result property="schoolDormName" column="schoole_dorm_name"/>
+            <result property="schoolBuildingId" column="schoole_dorm_building_id"/>
+        </association>
+    </resultMap>
+    <select id="listByUserId" resultMap="list">
+        SELECT dorm_repair.*,schoole_dorm.*
+        FROM dorm_repair
+        LEFT JOIN schoole_dorm on dorm_repair.repair_dorm_id=schoole_dorm.schoole_dorm_id
+        WHERE repair_user_id=#{repairUserId}
+        ORDER BY repair_id DESC;
+    </select>
+
+    <select id="listByStatus" resultMap="list">
+        SELECT dorm_repair.*,schoole_dorm.*
+         FROM dorm_repair
+         LEFT JOIN schoole_dorm on dorm_repair.repair_dorm_id=schoole_dorm.schoole_dorm_id
+         WHERE repair_status=#{repairStatus}
+         ORDER BY repair_id DESC;
+    </select>
+
+    <select id="listByStatusAndBuilding" resultMap="list">
+        SELECT dorm_repair.*,schoole_dorm.*
+        FROM dorm_repair
+        LEFT JOIN schoole_dorm on dorm_repair.repair_dorm_id=schoole_dorm.schoole_dorm_id
+        WHERE repair_status=#{0}
+        AND repair_building_id=#{1}
+        ORDER BY repair_id DESC;
+    </select>
+
+    <insert id="insert" parameterType="com.colorfulword.smallbluewhale.domain.DormRepair">
+        INSERT INTO dorm_repair (repair_user_id,
+        repair_building_id,
+        repair_dorm_id,
+        article_name,
+        reason,
+        `desc`,
+        dorm_repair_pics,
+        repair_status)
+        VALUES (#{repairUserId},
+        #{repairSchoolBuildingId},
+        #{repairDormId},
+        #{articleName},
+        #{reason},
+        #{desc},
+        #{pics},
+        0)
+    </insert>
+
+    <update id="reply">
+        UPDATE dorm_repair SET
+        repair_status=1,
+        dorm_repair_reply=#{dormRepairReply}
+        WHERE repair_id=#{repairId}
+    </update>
+
+</mapper>

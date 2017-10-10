@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link rel="stylesheet" type="text/css" href="css/public.css" />
+    <title>真心话大冒险</title>
+</head>
+<body>
+<div class="header">
+    <a onclick="window.history.go(-1)" class="back"><img class="backImg" src="images/back_gray.png"></a>真心话大冒险
+</div>
+
+<div class="content">
+    <h3>默认信息</h3>
+    <div class="register" >
+        <label class="info2">
+            <span class="sign">游戏人数</span>            
+            <input type="text" id="gameNumber" name="gameNumber" class="txt" value="10" />
+            </script>
+        </label>
+        <label class="info2" style=" ">
+            <span class="sign">游戏类型</span>
+            <select id="gameType" name="gameType" class="txt" >
+                <option disabled selected>选择类型</option>
+                <option value="真心话">真心话</option>
+                <option value="大冒险">大冒险</option>
+            </select>
+        </label>
+     </div>
+    <button class="suiji" id="result">随机生成</button>
+    <h3>生成信息</h3>
+    <ul class="list">
+        <li class="listInfo">
+            <span class="listLeft">随机号码</span>
+            <span class="listRight" id="code"></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">任务内容</span>
+            <span class="listRight" id="task"></span>            
+        </li>
+    </ul>
+</div>
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+<script>
+$("#result").on("click",function(){
+
+    $.ajax({
+    url: websiteUrl+"/api/truthOrDare/list", //真心话接口
+    dataType: "json",
+    type: "GET",
+    contentType: "application/json;charset=UTF-8", 
+    async: true, //默认异步调用 (false：同步)
+    success: function (data) 
+    {
+        data = eval(data);
+        result=data.data;
+        var code=GetRandomNum(1,$("#gameNumber").val())
+        var task=result[code-1].content;
+         $("#code").text(code);
+         $("#task").text(task);
+    },
+    error: function (data) {
+        openTips(data.message);
+    }
+   }); 
+
+
+})
+
+function GetRandomNum(Min,Max)
+{   
+var Range = Max - Min;   
+var Rand = Math.random();   
+return(Min + Math.round(Rand * Range));   
+}
+</script>
+</body>
+</html>
+

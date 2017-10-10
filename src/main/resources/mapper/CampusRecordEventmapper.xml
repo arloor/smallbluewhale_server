@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.CampusRecordEventDao">
+    <resultMap id="list" type="com.colorfulword.smallbluewhale.domain.CampusRecordEvent">
+        <id property="recordEventId" column="campus_record_event_id"/>
+        <result property="title" column="campus_record_event_title"/>
+        <result property="recordTime" column="campus_record_event_time"/>
+        <result property="campus" column="campus_record_event_campus"/>
+        <result property="organizationSide" column="organization_side"/>
+        <result property="content" column="campus_record_event_content" />
+        <result property="status" column="campus_record_event_status" />
+        <result property="pics" column="campus_record_event_pics"/>
+    </resultMap>
+    <select id="listByCampus" resultMap="list">
+        SELECT campus_record_event.*
+        FROM campus_record_event
+        WHERE campus_record_event_campus=#{campus}
+        ORDER BY campus_record_event_id DESC;
+    </select>
+
+    <insert id="insert" parameterType="com.colorfulword.smallbluewhale.domain.CampusRecordEvent">
+        INSERT INTO campus_record_event (campus_record_event_title,
+        campus_record_event_time,
+        campus_record_event_campus,
+        organization_side,
+        campus_record_event_content,
+        campus_record_event_pics)
+        VALUES (#{title},
+        #{recordTime},
+        #{campus},
+        #{organizationSide},
+        #{content},
+        #{pics})
+    </insert>
+
+    <update id="update">
+        UPDATE campus_record_event SET
+        campus_record_event_title=#{title},
+        campus_record_event_time=#{recordTime},
+        campus_record_event_campus=#{campus},
+        organization_side=#{organizationSide},
+        campus_record_event_content=#{content},
+        campus_record_event_pics=#{pics}
+        WHERE campus_record_event_id=#{recordEventId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM campus_record_event
+        WHERE campus_record_event_id=#{recordEventId}
+    </delete>
+
+    <select id="get" resultMap="list">
+        SELECT campus_record_event.*
+        FROM campus_record_event
+        WHERE campus_record_event_id=#{recordEventId}
+    </select>
+</mapper>

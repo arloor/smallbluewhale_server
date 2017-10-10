@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8"/>
+    <title>小蓝鲸</title>
+    <link th:href="@{font/css/font-awesome.css}" rel="stylesheet"/>
+    <link th:href="@{bootstrap/css/bootstrap.css}" rel="stylesheet"/>
+    <link th:href="@{bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
+    <link th:href="@{bootstrap/css/bootstrap-theme.min.css}" rel="stylesheet"/>
+    <!--<link th:href="@{css/theme.css}" rel="stylesheet"/>-->
+    <!--<link th:href="@{css/premium.css}"  rel="stylesheet"/>-->
+    <script th:src="@{jquery-3.1.1.js}" type="text/javascript"></script>
+    <script th:src="@{bootstrap/js/bootstrap.js}" type="text/javascript"></script>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+    <style>
+    </style>
+    <script type="text/javascript" th:inline="javascript">
+
+        var dormListMap={};
+        var buildingSelect;
+        var buildingDatas = [];
+        $(function () {
+            buildingSelect = document.getElementById("building");
+            var userName = [[${#httpServletRequest.remoteUser}]];
+            if (userName ==='admin'){
+                var URL = [[@{/api/schoolbuilding/list}]];
+                $.ajax({	//使用JQuery内置的Ajax方法
+                    type : "get",	//post请求方式
+                    url : URL,
+                    dataType : "json",	//返回数据形式为json
+                    success : function(result) {
+                        console.log("result >>> " + JSON.stringify(result));
+                        if(result.code == 0){
+                            if (result.data.length > 0){
+                                buildingSelect.innerHTML = initOp(result.data,null);
+                                buildingDatas = result.data;
+                                getListViewData(buildingSelect.options[buildingSelect.selectedIndex].value);
+                            }
+                        }
+                    },
+                    error : function(errorMsg) {
+                        //请求失败时执行该函数
+                        alert("失败 >>>> " + errorMsg);
+                    }
+                });
+            }else{
+                console.log("userData >>> " + JSON.stringify(userData));
+                if (window.localStorage.getItem("smallblueUserData")){
+                    var userData = JSON.parse(window.localStorage.getItem("smallblueUserData")) ;
+                    var text =  userData.schoolBuilding.campus + '-' +  userData.schoolBuilding.area+'-' +  userData.schoolBuilding.building;
+                    document.getElementById("building").innerHTML = '<option value="'+  userData.schoolBuilding.schoolBuildingId+ '">' + text + '</option>';
+                    buildingDatas[0] = userData.schoolBuilding;
+                    getListViewData(userData.schoolBuilding.schoolBuildingId);
+                }else{
+                    var URL = [[@{/api/user/}]] + userName;
+                    $.ajax({	//使用JQuery内置的Ajax方法
+                        type: "get",	//post请求方式
+                        url: URL,
+                        dataType: "json",	//返回数据形式为json
+                        success: function (result) {
+                            console.log("result >>> " + JSON.stringify(result));
+                            if (result.code === 0){
+                                window.localStorage.setItem("smallblueUserData",result.data);
+                                var text =  result.data.schoolBuilding.campus + '-' +  result.data.schoolBuilding.area+'-' +  result.data.schoolBuilding.building;
+                                document.getElementById("building").innerHTML = '<option value="'+  result.data.schoolBuilding.schoolBuildingId+ '">' + text + '</option>';
+                                buildingDatas[0] = result.data.schoolBuilding;
+                                getListViewData(result.data.schoolBuilding.schoolBuildingId);
+                            };
+                        },
+                        error: function (errorMsg) {
+                            //请求失败时执行该函数
+                        }
+                    });
+                }
+            };
+
+        });
+
+        getListViewData = function (id) {
+            var URL = [[@{/api/schooldorm/listBySchoolBuildingId?schoolBuildingId=}]] + id;
+            if (dormListMap[URL]){
+                console.log("dormListMap[URL] >>> " + JSON.stringify(dormListMap[URL]));
+                var listbody = document.getElementById("list-body");
+                listbody.innerHTML = '';
+                if (dormListMap[URL].length > 0) {
+                    $.each(dormListMap[URL], function (index, data) {
+                        listbody.appendChild(getListItem(data, index));
+                    });
+                }
+            }else{
+                $.ajax({	//使用JQuery内置的Ajax方法
+                    type : "get",	//post请求方式
+                    url : URL,
+                    dataType : "json",	//返回数据形式为json
+                    success : function(result) {
+                        console.log("getListViewData >>> " + JSON.stringify(result));
+                        var listbody = document.getElementById("list-body");
+                        listbody.innerHTML = '';
+                        dormListMap[URL] = result.data;
+                        console.log("dormListMap >>> " + JSON.stringify(dormListMap));
+                        if (result.data.length > 0) {
+                            $("#listNoData").hide();
+                            $.each(result.data, function (index, data) {
+                                listbody.appendChild(getListItem(data, index));
+                            });
+                        }else {
+                            $("#listNoData").show();
+                        }
+                    },
+                    error : function(errorMsg) {
+                        //请求失败时执行该函数
+                        alert("失败 >>>> " + errorMsg);
+                    }
+                });
+            }
+        };
+        initOp = function (datas,hintText) {
+            var str = '';
+            if (hintText){
+                str = "<option>" + hintText + "</option>";
+            }
+            $.each( datas, function(index, data)
+            {
+                var text = data.campus + '-' + data.area+'-' + data.building;
+                str +='<option value="'+ data.schoolBuildingId+ '">' + text + '</option>';
+                console.log('<option>' + text + '</option>');
+            });
+            return str;
+        };
+
+        getListItem = function (data, index) {
+            console.log("data >>> " + JSON.stringify(data));
+            var item = document.createElement("tr");
+            switch (index % 3) {
+                case 0:
+                    item.setAttribute("class", "success");
+                    break;
+                case 1:
+                    item.setAttribute("class", "warning");
+                    break;
+                case 2:
+                    item.setAttribute("class", "danger");
+                    break;
+                default:
+                    item.setAttribute("class", "success");
+                    break;
+            }
+            var str = '<td style="line-height: 40px;">' + (index + 1) + '</td>';
+            str += ' <td style="line-height: 40px;">' + buildingDatas[buildingSelect.selectedIndex].campus + '</td>';
+            str += ' <td style="line-height: 40px;">' + buildingDatas[buildingSelect.selectedIndex].area + '</td>';
+            str += ' <td style="line-height: 40px;">' + buildingDatas[buildingSelect.selectedIndex].building + '</td>';
+            str += '<td style="line-height: 40px;">' + data.schoolDormName + '</td>';
+//            str += '<td style="line-height: 40px;" ><button class="btn btn-primary" onclick="deleteData(\'' + data.schoolDormId + '\');">删除</button></td>';
+            item.innerHTML = str;
+            return item;
+        };
+        deleteData = function (index) {
+            var URL = [[@{/api/schooldorm/}]] + index;
+            $.ajax({	//使用JQuery内置的Ajax方法
+                type: "delete",	//post请求方式
+                url: URL,
+                dataType: "json",	//返回数据形式为json
+                success: function (result) {
+                    if (result.code == 0){
+                        $('#myModal').on('hide.bs.modal', function () {
+                            location.reload(false);
+                        })
+                    }else {
+                        document.getElementById("dialog-body").innerHTML=result.message;
+                    }
+                    $('#myModal').modal('show');
+                },
+                error: function (errorMsg) {
+                    //请求失败时执行该函数
+                    alert("失败 >>>> " + errorMsg);
+                }
+            });
+        };
+
+        changeEvent = function () {
+            getListViewData(buildingSelect.options[buildingSelect.selectedIndex].value);
+        };
+    </script>
+</head>
+<body>
+<div class="panel panel-default" style="background-color: #fff; ">
+    <p class="panel-heading no-collapse">宿舍列表</p>
+    <div class="panel-body" style="background-color: #fff;">
+        <div class="form-horizontal">
+            <div id="filter-group" class="form-group">
+                <label class="col-sm-1 control-label" style="text-align: right">楼栋</label>
+                <div class="col-sm-11">
+                    <select id="building" class="form-control" onchange="changeEvent();">
+
+                    </select>
+                </div>
+            </div>
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>序号</th>
+                <th>校区</th>
+                <th>组团</th>
+                <th>楼栋</th>
+                <th>宿舍</th>
+                <!--<th>操作</th>-->
+            </tr>
+            </thead>
+            <tbody id="list-body">
+            </tbody>
+        </table>
+        <div id="listNoData" style="width:100%;text-align: center">暂无数据!</div>
+
+    </div>
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">
+                        温馨提示
+                    </h4>
+                </div>
+                <div id="dialog-body" class="modal-body">
+                    删除成功!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                    </button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+</div>
+</body>
+</html>

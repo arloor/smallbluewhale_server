@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link type="text/css" rel="stylesheet" href="css/my_real.css" />
+    <link type="text/css" rel="stylesheet" href="css/public.css" />
+    <title>资料修改</title>
+</head>
+<body>
+<div class="header">
+    <a onclick="window.history.go(-1)" class="back"><img src="images/back_gray.png" class="backImg" /></a>资料修改
+</div>
+<div class="content" id="infoDefault">
+  <script id="studentDetail" type="text/html">
+    <form id="userAuthenForm" method="post" enctype="multipart/form-data" >
+    <p class="studentImg">
+       <%if(data[0].headPic){%>
+        <img src="/smallbluewhale/<%=data[0].headPic%>"  />
+         <%}else {%>
+           <span>未上传头像</span>
+         <%} %>                       
+    </p>
+   <h3>用户信息</h3>   
+    <div class="register" >
+        <label class="info" >
+            <span class="sign">学号</span>            
+            <input type="text" id="userNumber" name="userNumber" class="txt" value="<%=data[0].userNumber%>" style=" background: #fff;color: #666" disabled/>           
+        </label>
+        <label class="info">
+            <span class="sign">院系</span>
+            <input type="text" id="schoolStudyInfo" name="schoolStudyInfo" class="txt" value="<%=data[0].schoolStudyInfo.campus%>-<%=data[0].schoolStudyInfo.department%>" style=" background: #fff; color: #666;" disabled/>
+        </label>
+        <label class="info">
+            <span class="sign">宿舍</span>
+            <input type="text" id="schoolDorm" name="schoolDorm" class="txt" value="<%=data[0].schoolBuilding.campus%>-<%=data[0].schoolBuilding.area%>-<%=data[0].schoolBuilding.building%>-<%=data[0].schoolDorm.schoolDormName%>室" style=" background: #fff; color: #666;" disabled/>
+        </label> 
+        <label class="info">
+            <span class="sign">手机</span>
+            <input type="text" id="mobile" name="mobile" class="txt" placeholder="（选填）" value="<%=data[0].mobile%>" maxlength="200"/>
+        </label>
+        <label class="info">
+            <span class="sign">姓名</span>
+            <input type="number" id="fullName" name="fullName" class="txt" placeholder="（选填）" value="<%=data[0].fullName%>" maxlength="11"/>
+        </label>
+        <label class="info">
+            <span class="sign">性别</span>
+            <select id="campusName" name="campus" class="txt txtsc">
+                <option disabled selected><%=data[0].sex%></option>
+                <option value="男">男</option>
+                <option value="女">女</option>               
+            </select>
+        </label>
+        <label class="info">
+            <span class="sign">邮箱</span>
+            <input type="text" id="email" name="email" class="txt" placeholder="（选填）" value="<%=data[0].email%>" />
+        </label>
+        <label class="info">
+            <span class="sign">QQ</span>
+            <input type="text" id="qq" name="qq" class="txt" placeholder="（选填）" value="<%=data[0].qq%>" />
+        </label>
+        <label class="info">
+            <span class="sign">微信号</span>
+            <input type="text" id="weChat" name="weChat" class="txt" placeholder="（必填）" value="" />
+        </label>
+        </div>
+        <div class="infoPic" style=" background: #fff;">
+            <span class="sign">更改头像</span>
+            <span class="tips">点击下方图片区域上传</span>
+            <p class="img">               
+                <input id="file" name="file" type="file" class="file"/>
+                <%if(data[0].headPic){%>
+                <img src="/smallbluewhale/<%=data[0].headPic%>" class="file0" />
+                <%}else{%>
+                <img src="images/add.png" class="file0" />
+                <%}%>
+            </p>
+        </div>
+    </div>
+    <input type="button" class="loginBtn" value="提 交" id="modi" />
+    </form>
+ </script>
+</div>
+
+
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/baiduTemplate.js"></script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+
+<script type="text/javascript">
+var studentNo = localStorage["studentNo"];
+starFun();
+function starFun(){
+    var studentNo = localStorage["studentNo"];
+    console.log(studentNo); 
+    if(studentNo==undefined || studentNo=="" || studentNo==null){
+        login("请先登录");
+    }else{
+        $.ajax({
+            url: websiteUrl+"/api/userInfo/searchByUserNumber?userNumber="+studentNo, //通过学号查询接口
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json;charset=UTF-8", 
+            async: true, //默认异步调用 (false：同步)
+            success: function (data) 
+            {
+                result = eval(data.data);
+                console.log(result)
+                if(result.length==0){
+                    openTips("不存在此学号或无输入！");
+                    setTimeout("top.location.href = 'regsave.html'",2000);
+                }else{
+                    $("#login").hide();
+                    var bt=baidu.template;
+                    var html=bt("studentDetail",data);       
+                    document.getElementById("infoDefault").innerHTML=html;
+
+
+
+                    //    图片预览
+                    $(".file").change(function(){
+                        var objUrl = getObjectURL(this.files[0]) ;
+                        if (objUrl) {
+                            $(this).next(".file0").attr("src", objUrl) ;
+                        }
+                    });
+
+
+                    function getObjectURL(file) {
+                        var url = null ;
+                        if (window.createObjectURL!=undefined) { // basic
+                            url = window.createObjectURL(file) ;
+                        } else if (window.URL!=undefined) { // mozilla(firefox)
+                            url = window.URL.createObjectURL(file) ;
+                        } else if (window.webkitURL!=undefined) { // webkit or chrome
+                            url = window.webkitURL.createObjectURL(file) ;
+                        }
+                        return url ;
+                    }
+                    
+                    function dataURItoBlob(base64Data) {
+                      var byteString; if (base64Data.split(',')[0].indexOf('base64') >= 0) byteString = atob(base64Data.split(',')[1]); elsebyteString = unescape(base64Data.split(',')[1]); var mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0]; var ia = new Uint8Array(byteString.length); for (var i = 0; i < byteString.length; i++) { ia[i] = byteString.charCodeAt(i); } return new Blob([ia], {type:mimeString}); 
+                    }
+
+                     $.ajax({
+                        url: websiteUrl+"/api/user/"+studentNo, //用户接口
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json;charset=UTF-8", 
+                        async: true, //默认异步调用 (false：同步)
+                        success: function (data) 
+                        {
+                            result = eval(data.data);
+                           $("#weChat").val(result.weChat);
+
+
+                           $("#modi").on("click",function(){
+
+                                var data={
+                                  "userNumber": $("#userNumber").val(),
+                                  "weChat": $("#weChat").val(),
+                                  "fullName": $("#fullName").val(),
+                                  "sex": $("#sex").val(),
+                                  "email": $("#email").val(),
+                                  "qq": $("#qq").val(),
+                                  "mobile": $("#mobile").val(),
+                                  "file": $("#file").val()
+                                }
+
+                                data=JSON.stringify(data);
+                                $.ajax({
+                                    url: websiteUrl+"/api/user/bindWeChat", //绑定微信接口
+                                    dataType: "json",
+                                    type: "POST",
+                                    contentType: "application/json",
+                                    processData: false, 
+                                    async: true, //默认异步调用 (false：同步)
+                                    data:data,
+                                    success: function (data) 
+                                    { 
+                                        openTips("修改成功");
+                                        console.log(data);
+                                        setTimeout("top.location.href = 'myinfor.html'",2000);
+                                    },
+                                    error: function (data) {
+                                        openTips(data.message);
+                                    }
+                                }); 
+
+                            })
+
+                        },
+                        error: function (data) {
+                            openTips(data.message);
+                        }
+                    }); 
+
+                }        
+            },
+            error: function (data) {
+                login("请先登录");
+            }
+        });
+    } 
+}
+
+
+
+
+
+
+</script>
+</body>
+</html>

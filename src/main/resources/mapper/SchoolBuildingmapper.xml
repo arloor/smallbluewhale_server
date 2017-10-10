@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.SchoolBuildingDao">
+    <resultMap id="list" type="com.colorfulword.smallbluewhale.domain.SchoolBuilding">
+        <id property="schoolBuildingId" column="school_building_id"/>
+        <result property="campus" column="campus"/>
+        <result property="area" column="area"/>
+        <result property="building" column="building"/>
+    </resultMap>
+    <select id="list" resultMap="list">
+        SELECT school_building.*
+        FROM school_building
+    </select>
+
+    <select id="listArea" resultMap="list">
+        SELECT school_building.campus,school_building.area
+         FROM school_building
+         GROUP BY school_building.area
+         order by school_building.campus ASC;
+    </select>
+
+    <select id="listByArea" resultMap="list">
+        SELECT school_building.*
+        FROM school_building
+        WHERE area=#{area};
+    </select>
+
+    <select id="get" resultMap="list">
+        SELECT school_building.*
+        FROM school_building
+        WHERE school_building_id=#{schoolBuildingId};
+    </select>
+</mapper>

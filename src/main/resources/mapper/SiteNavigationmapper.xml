@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.SiteNavigationDao">
+    <resultMap id="list" type="com.colorfulword.smallbluewhale.domain.SiteNavigation">
+        <id property="siteId" column="site_id"/>
+        <result property="icon" column="site_icon"/>
+        <result property="name" column="site_name"/>
+        <result property="url" column="site_url"/>
+        <result property="group" column="site_group"/>
+    </resultMap>
+    <select id="list" resultMap="list">
+        SELECT snv.*
+        FROM site_navigation snv
+    </select>
+
+    <insert id="insert" parameterType="com.colorfulword.smallbluewhale.domain.SiteNavigation">
+        INSERT INTO site_navigation (site_icon,
+        site_name,
+        site_url,
+        site_group)
+        VALUES (#{icon},
+        #{name},
+        #{url},
+        #{group})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM site_navigation
+        WHERE site_id=#{siteId}
+    </delete>
+
+    <update id="update">
+        UPDATE site_navigation SET
+        site_icon=#{icon},
+        site_name=#{name},
+        site_url=#{url},
+        site_group=#{group}
+        WHERE site_id=#{siteId}
+    </update>
+</mapper>

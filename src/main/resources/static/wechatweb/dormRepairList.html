@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link type="text/css" rel="stylesheet" href="css/invitation.css" />
+    <link type="text/css" rel="stylesheet" href="css/public.css" />
+    <title>报修记录</title>
+</head>
+<body>
+<div class="top">
+    <div class="header">
+        <a onclick="window.history.go(-1)" class="back"><img src="images/back_gray.png" class="backImg" /></a><h1>报修记录</h1>
+    </div>
+</div>
+
+<div class="content">
+    <div class="notUsed">
+        <ul class="list" >
+    
+        </ul>
+
+        <p class="more">点击加载更多</p>
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+<script type="text/javascript" src="js/loadmore.js"></script>
+<script type="text/javascript">
+
+var studentNo = localStorage["studentNo"];
+starFun();
+function starFun(){
+    var studentNo = localStorage["studentNo"];
+    console.log(studentNo); 
+    if(studentNo==undefined || studentNo=="" || studentNo==null){
+        login("请先登录");
+    }else{
+        $.ajax({
+            url: websiteUrl+"/api/userInfo/searchByUserNumber?userNumber="+studentNo, //通过学号查询接口
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json;charset=UTF-8", 
+            async: true, //默认异步调用 (false：同步)
+            success: function (data) 
+            {
+                result = eval(data.data);
+                
+                if(result.length==0){
+                    openTips("不存在此学号或无输入！");
+                    setTimeout("top.location.href = 'regsave.html'",2000);
+                }else{
+                    $("#login").hide();
+                     $.ajax({
+                        url: websiteUrl+"/api/user/"+studentNo, //用户接口
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json;charset=UTF-8", 
+                        async: true, //默认异步调用 (false：同步)
+                        success: function (data) 
+                        {
+                            result = eval(data.data);
+                           $("#publisherId").val(result.userId); 
+
+                            var userInfoId = result.userId;
+
+                            $.loadmore.get(getData, {
+                                scroll: true,  //默认是false,是否支持滚动加载
+                                size:5,  //默认是10
+                            });
+
+                            function getData(config, offset,size,typeTab){
+
+                                config.isAjax = true;
+
+                                $.ajax({
+                                    type: 'GET',
+                                    url: websiteUrl + "/api/dormRepair/listByUserId?repairUserId="+userInfoId,//当前用户报修列表接口
+                                    dataType: 'json',
+                                    contentType:"application/json;charset=UTF-8",
+                                    success: function(reponse){            
+                                        config.isAjax = false;
+                                        var data = reponse.data;
+                                        console.log(reponse); 
+                                        var sum = reponse.data.length;             
+                                        var result = '';
+                                        
+                                        /************业务逻辑块：实现拼接html内容并append到页面*****************/
+                                        
+                                        //console.log(offset , size, sum);
+                                        
+                                        /*如果剩下的记录数不够分页，就让分页数取剩下的记录数
+                                        * 例如分页数是5，只剩2条，则只取2条
+                                        *
+                                        * 实际MySQL查询时不写这个
+                                        */
+                                        if(sum - offset < size ){
+                                            size = sum - offset;
+                                        }
+
+                                        
+                                        /*使用for循环模拟SQL里的limit(offset,size)*/
+                                        for(var i=offset; i< (offset+size); i++){ 
+
+                                            var pic=data[i].pics;
+
+                                            if(pic.length>2){
+                                                var img=replaceString(pic);
+                                                var imgUrl=websiteUrl+'/'+img[0];
+                                            }else{
+                                                 var imgUrl="images/lz.png";
+                                                
+                                            }  
+
+                                            result +='<li>'+
+                                                         '<div class="list_img" ><img src="'+imgUrl+'"></div>'+
+                                                         '<div class="list_txt">'+
+                                                           '<h2>'+ data[i].articleName +'</h2>'+
+                                                           '<p>'+ data[i].desc+'</p>'+
+                                                         '</div>'+  
+                                                         '<a href="dormRepairDetail.html?index='+i+'&repairUserId='+userInfoId+'">查看详情</a>'+
+                                                      '</li>';
+                                        }
+
+                                        $('.list').append(result);
+
+                                        /*******************************************/
+                                        
+                                        /*隐藏more*/
+                                        if ( (offset + size) >= sum){
+                                            $(".more").hide();
+                                            config.isEnd = true; /*停止滚动加载请求*/
+                                            //提示没有了
+                                        }else{
+                                            $(".more").show();
+                                        }
+                                    },
+                                    error: function(error){
+                                        openTips(error.message);
+                                    }
+                                });
+                            }   
+
+                        },
+                        error: function (data) {
+                            openTips(data.message);
+                        }
+                    }); 
+
+                }        
+            },
+            error: function (data) {
+                login("请先登录");
+            }
+        });
+    } 
+}
+
+
+
+
+
+</script>
+</html>
+
+

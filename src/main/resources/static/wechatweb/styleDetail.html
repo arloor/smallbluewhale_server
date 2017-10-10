@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link rel="stylesheet" type="text/css" href="css/public.css" />
+    <script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery.flexslider-min.js"></script>
+    <title>详情信息</title>
+</head>
+<body>
+<div class="header">
+    <a onclick="window.history.go(-1)" class="back"><img class="backImg" src="images/back_gray.png"></a>详情信息
+</div>
+
+<div class="block_home_slider">
+    <div id="home_slider" class="flexslider">
+        <ul class="slides" id="sliderList">
+            
+        </ul>
+    </div>
+</div>
+
+<div id="addContent"></div>
+<script id="Detail" type="text/html">
+<div class="content">
+    <ul class="list">
+        <li class="listInfo">
+            <span class="listLeft">工号</span>
+            <span class="listRight"><%=data[index].userNumber%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">姓名</span>
+            <span class="listRight"><%=data[index].userName%></span>            
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">手机</span>
+            <span class="listRight"><%=data[index].mobile%></span>
+        </li>
+    </ul>
+    <h3>个人介绍</h3>
+    <div class="content_txt">
+        <p><%=data[index].content%></p>
+    </div>
+</div>
+</script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+<script type="text/javascript" src="js/baiduTemplate.js"></script>
+<script type="text/javascript">
+
+    function GetQueryString(name)
+    {
+         var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+         var r = window.location.search.substr(1).match(reg);
+         if(r!=null)return  decodeURI(r[2]); return null;
+    }
+    var index=GetQueryString("index");
+    var type=GetQueryString("type");
+    var campus=GetQueryString("campus");
+    
+
+$.ajax({
+    type: "GET",
+    url: websiteUrl+"/api/personalStyle/list?campus="+campus+"&type="+type, //详情接口
+    dataType: "json",
+    contentType: "application/json;charset=UTF-8", 
+    async: true, //默认异步调用 (false：同步)
+    success: function (data) 
+    {
+        data = eval(data);
+        var pic=data.data[index].pics;
+        var img=replaceString(pic);
+        if(img.length<1||img[0]==""){
+            var imgs='<li class="nullimg">没有图片</li>'; 
+            $('#sliderList').append(imgs);              
+        }else{ 
+            for(var i=0;i<img.length;i++){
+             var imgs='<li><div class="slide"><img src="'+websiteUrl+'/'+img[i]+'"></div></li>';
+             $('#sliderList').append(imgs);
+             }
+
+            $('#home_slider').flexslider({
+                animation : 'slide',
+                controlNav : true,
+                directionNav : true,
+                animationLoop : true,
+                slideshow : false,
+                useCSS : false
+            });
+        }
+        
+        
+        var bt=baidu.template;
+        //最简使用方法
+        var html=bt("Detail",data);
+        //渲染
+               
+        document.getElementById("addContent").innerHTML=html; 
+           
+    },
+    error: function (data) {
+        openTips(data.message);
+    }
+}); 
+
+function getQueryString(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    var r = window.location.search.substr(1).match(reg);
+    if ( r != null ){
+       return unescape(r[2]);
+    }else{
+       return null;
+    } 
+ }   
+</script>
+</body>
+</html>
+

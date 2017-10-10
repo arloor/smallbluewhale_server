@@ -1,0 +1,206 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8" />
+    <title>小蓝鲸</title>
+    <link th:href="@{font/css/font-awesome.css}" rel="stylesheet" />
+    <link th:href="@{bootstrap/css/bootstrap.css}" rel="stylesheet" />
+    <link th:href="@{bootstrap/css/bootstrap.min.css}" rel="stylesheet" />
+    <link th:href="@{bootstrap/css/bootstrap-theme.min.css}" rel="stylesheet" />
+    <link th:href="@{css/theme.css}" rel="stylesheet"/>
+    <!--<link th:href="@{css/premium.css}"  rel="stylesheet"/>-->
+    <script th:src="@{jquery-3.1.1.js}" type="text/javascript"></script>
+    <script th:src="@{bootstrap/js/bootstrap.js}" type="text/javascript"></script>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
+
+    <script type="text/javascript" th:inline="javascript">
+        $(function() {
+            var userName = [[${#httpServletRequest.remoteUser}]];
+            if (userName ==='admin'){}else{
+                var URL = [[@{/api/user/}]] + userName;
+                $.ajax({	//使用JQuery内置的Ajax方法
+                    type: "get",	//post请求方式
+                    url: URL,
+                    dataType: "json",	//返回数据形式为json
+                    success: function (result) {
+                        console.log("result >>> " + JSON.stringify(result));
+                        if (result.code === 0){
+                            window.localStorage.setItem("smallblueUserData",JSON.stringify(result.data));
+                        };
+                    },
+                    error: function (errorMsg) {
+                        //请求失败时执行该函数
+                    }
+                });
+            }
+            if (userName){
+                document.getElementById("username").innerHTML = userName;
+            }else{
+                document.getElementById("username").innerHTML = "未登录";
+            }
+            var match = document.cookie.match(new RegExp('color=([^;]+)'));
+            if(match) var color = match[1];
+            if(color) {
+                $('body').removeClass(function (index, css) {
+                    return (css.match (/\btheme-\S+/g) || []).join(' ')
+                })
+                $('body').addClass('theme-' + color);
+            }
+            $('[data-popover="true"]').popover({html: true});
+
+        });
+        $(function() {
+            var uls = $('.sidebar-nav > ul > *').clone();
+            uls.addClass('visible-xs');
+            $('#main-menu').append(uls.clone());
+        });
+        $("[rel=tooltip]").tooltip();
+        $(function() {
+            $('.demo-cancel-click').click(function(){return false;});
+        });
+        showtitle = function (obj) {
+            $("#header").hide();
+//            console.log(obj);
+//            document.getElementById("show_title").innerHTML = obj;
+        };
+    </script>
+    <style type="text/css">
+        #line-chart {
+            height:300px;
+            width:800px;
+            margin: 0px auto;
+            margin-top: 1em;
+        }
+        .navbar-default .navbar-brand, .navbar-default .navbar-brand:hover {
+            color: #fff;
+        }
+    </style>
+
+
+</head>
+<body class=" theme-blue">
+<div class="navbar navbar-default" role="navigation">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="" href="index.html"><span class="navbar-brand">
+            <span class="fa fa-paper-plane"></span>
+            小蓝鲸</span></a>
+    </div>
+
+    <div class="navbar-collapse collapse" style="height: 1px;">
+        <ul id="main-menu" class="nav navbar-nav navbar-right">
+            <li class="dropdown hidden-xs">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <span class="glyphicon glyphicon-user padding-right-small" style="position:relative;top: 3px;"></span>
+                    <span id="username" ></span>
+                    <i class="fa fa-caret-down"></i>
+                </a>
+
+                <ul class="dropdown-menu">
+                    <li ><a th:href="@{/logout}" onclick="showtitle('退出登录')">退出登录</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+</div>
+<div class="sidebar-nav">
+    <ul>
+        <li sec:authorize="hasRole('ROLE_ADMIN')" ><a href="#" data-target=".accounts-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-user"></i> 宿管管理 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="accounts-menu nav nav-list collapse">
+            <li ><a th:href="@{/accountlist}" target="ifrPage" onclick="showtitle('宿管列表')"><span class="fa fa-caret-right"></span> 宿管列表 </a></li>
+            <li ><a th:href="@{/addaccount}" target="ifrPage" onclick="showtitle('添加宿管')"><span class="fa fa-caret-right"></span> 添加宿管 </a></li>
+        </ul></li>
+        <li ><a href="#" data-target=".student-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-group"></i> 学生管理 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="student-menu nav nav-list collapse">
+            <li ><a th:href="@{/studentlist}" target="ifrPage" onclick="showtitle('学生列表')"><span class="fa fa-caret-right"></span> 学生列表 </a></li>
+            <li ><a th:href="@{/addstudent}" target="ifrPage" onclick="showtitle('录入学生信息')"><span class="fa fa-caret-right"></span> 录入学生信息 </a></li>
+        </ul></li>
+        <!--sec:authorize="hasRole('ROLE_ADMIN')"-->
+        <li  ><a href="#" data-target=".dormitory-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-building"></i> 宿舍管理 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="dormitory-menu nav nav-list collapse">
+            <li><a th:href="@{/dormitorylist}" target="ifrPage" onclick="showtitle('宿舍列表')"><span class="fa fa-caret-right"></span> 宿舍列表 </a></li>
+            <li><a th:href="@{/adddormitory}" target="ifrPage" onclick="showtitle('录入宿舍')"><span class="fa fa-caret-right"></span> 录入宿舍 </a></li>
+            <li ><a th:href="@{/dormitoryrepair}" target="ifrPage" onclick="showtitle('宿舍报修')"><span class="fa fa-caret-right"></span> 宿舍报修 </a></li>
+            <li ><a th:href="@{/feedback}" target="ifrPage" onclick="showtitle('意见反馈')"><span class="fa fa-caret-right"></span> 意见反馈 </a></li>
+        </ul></li>
+
+        <li><a href="#" data-target=".article-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-bullhorn"></i> 失物管理 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="article-menu nav nav-list collapse">
+            <li ><a th:href="@{/articlelist}" target="ifrPage" onclick="showtitle('消息列表')"><span class="fa fa-caret-right"></span> 失物列表</a></li>
+            <li ><a th:href="@{/addarticle}"  target="ifrPage" onclick="showtitle('消息发布')"><span class="fa fa-caret-right"></span> 失物发布</a></li>
+        </ul></li>
+
+        <li><a href="#" data-target=".message-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-bell"></i> 通知管理 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="message-menu nav nav-list collapse">
+            <li ><a th:href="@{/messagelist}" target="ifrPage" onclick="showtitle('消息列表')"><span class="fa fa-caret-right"></span> 通知列表</a></li>
+            <li ><a th:href="@{/addmessage}"  target="ifrPage" onclick="showtitle('消息发布')"><span class="fa fa-caret-right"></span> 通知发布</a></li>
+        </ul></li>
+        <li  sec:authorize="hasRole('ROLE_ADMIN')"><a href="#" data-target=".activity-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-glass"></i> 活动管理 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="activity-menu nav nav-list collapse">
+            <li ><a th:href="@{/activitylist}" target="ifrPage" onclick="showtitle('活动列表')"><span class="fa fa-caret-right"></span> 活动列表 </a></li>
+            <li ><a th:href="@{/addactivity}"  target="ifrPage" onclick="showtitle('活动发布')"><span class="fa fa-caret-right"></span> 活动发布 </a></li>
+        </ul></li>
+
+        <li  sec:authorize="hasRole('ROLE_ADMIN')"><a href="#" data-target=".staff-mien-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-star"></i> 员工风采管理 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="staff-mien-menu nav nav-list collapse">
+            <li ><a th:href="@{/staffmienlist}" target="ifrPage" onclick="showtitle('员工列表')"><span class="fa fa-caret-right"></span> 员工风采列表 </a></li>
+            <li ><a th:href="@{/addstaffmien}"  target="ifrPage" onclick="showtitle('新增员工风采')"><span class="fa fa-caret-right"></span> 新增员工风采 </a></li>
+        </ul></li>
+        <li  sec:authorize="hasRole('ROLE_ADMIN')"><a href="#" data-target=".campus-chronicle-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-envelope"></i> 校园纪事 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="campus-chronicle-menu nav nav-list collapse">
+            <li ><a th:href="@{/campuslist}" target="ifrPage" onclick="showtitle('校园纪事列表')"><span class="fa fa-caret-right"></span> 校园纪事列表 </a></li>
+            <li ><a th:href="@{/addcampus}"  target="ifrPage" onclick="showtitle('校园纪事发布')"><span class="fa fa-caret-right"></span> 发布校园纪事 </a></li>
+        </ul></li>
+        <li  sec:authorize="hasRole('ROLE_ADMIN')"><a href="#" data-target=".sitenavigation-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-link"></i> 网址导航 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="sitenavigation-menu nav nav-list collapse">
+            <li ><a th:href="@{/sitenavigationlist}" target="ifrPage" onclick="showtitle('网址列表')"><span class="fa fa-caret-right"></span> 网址列表 </a></li>
+            <li ><a th:href="@{/addsitenavigation}"  target="ifrPage" onclick="showtitle('网址发布')"><span class="fa fa-caret-right"></span> 网址发布 </a></li>
+        </ul></li>
+
+        <li  sec:authorize="hasRole('ROLE_ADMIN')"><a href="#" data-target=".truth_or_dare-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-heart"></i> 真心话大冒险 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="truth_or_dare-menu nav nav-list collapse">
+            <li ><a th:href="@{/truth_or_darelist}" target="ifrPage" onclick="showtitle('列表')"><span class="fa fa-caret-right"></span> 列表 </a></li>
+            <li ><a th:href="@{/addtruth_or_dare}"  target="ifrPage" onclick="showtitle('发布')"><span class="fa fa-caret-right"></span> 发布 </a></li>
+        </ul></li>
+
+        <li  sec:authorize="hasRole('ROLE_ADMIN')" ><a href="#" data-target=".studyinfo-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-book"></i> 院系管理 <i class="fa fa-collapse"></i></a></li>
+        <li><ul class="studyinfo-menu nav nav-list collapse">
+            <li ><a th:href="@{/studyinfolist}" target="ifrPage" onclick="showtitle('院系列表')"><span class="fa fa-caret-right"></span> 院系列表 </a></li>
+            <li ><a th:href="@{/addstudyinfo}"  target="ifrPage" onclick="showtitle('新增院系')"><span class="fa fa-caret-right"></span> 新增院系 </a></li>
+        </ul></li>
+    </ul>
+</div>
+
+<div class="content">
+    <div id="header" class="header">
+
+        <h1 id="show_title" class="page-title">欢迎来到小蓝鲸后台管理系统</h1>
+        <!--<ul class="breadcrumb">-->
+        <!--<li><a href="index.html" >主页</a> </li>-->
+        <!--</ul>-->
+
+    </div>
+    <div class="main-content">
+
+        <div style="height: 78%">
+            <iframe id="ifrPage" name="ifrPage" style="background-color: #fff; width: 100%;height: 110%"  frameborder="0" scrolling="yes"></iframe>
+        </div>
+
+        <footer style="height: 10%">
+            <hr>
+            <!--<p class="pull-right">Collect from <a href="http://51caihongtang.com/" title="彩虹糖" target="_blank">彩虹糖</a></p>-->
+            <p>© 2017 <a href="#" target="_blank">Portnine</a></p>
+            </hr>
+        </footer>
+    </div>
+</div>
+</body>
+</html>

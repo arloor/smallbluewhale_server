@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.LostArticleDao">
+    <resultMap id="list" type="com.colorfulword.smallbluewhale.domain.LostArticle">
+        <id property="lostArticleId" column="lost_article_id"/>
+        <result property="publisherId" column="publisher_id"/>
+        <result property="publishTime" javaType="java.sql.Timestamp" column="publish_time" jdbcType="TIMESTAMP" />
+        <result property="lostUser" column="lost_user"/>
+        <result property="lostUserMobile" column="lost_user_mobile"/>
+        <result property="lostArticleName" column="lost_article_name"/>
+        <result property="campus" column="campus"/>
+        <result property="position" column="position"/>
+        <result property="lostArticleType" column="lost_article_type"/>
+        <result property="lostArticleStatus" column="lost_article_status"/>
+        <result property="lostArticlePic" column="lost_article_pic"/>
+    </resultMap>
+    <select id="list" resultMap="list">
+        SELECT lost_article.*
+        FROM lost_article
+        WHERE lost_article_status=0
+        ORDER BY lost_article_id DESC;
+    </select>
+
+    <select id="listByCampus" resultMap="list">
+        SELECT lost_article.*
+        FROM lost_article
+        WHERE lost_article_status=0
+        AND campus=#{campus}
+        ORDER BY lost_article_id DESC;
+    </select>
+
+    <select id="listByType" resultMap="list">
+        SELECT lost_article.*
+        FROM lost_article
+        WHERE lost_article_status=0
+        AND lost_article_type=#{lostArticleType}
+        ORDER BY lost_article_id DESC;
+    </select>
+
+    <select id="listOfOffline" resultMap="list">
+        SELECT lost_article.*
+        FROM lost_article
+        WHERE lost_article_status=-1
+        ORDER BY lost_article_id DESC;
+    </select>
+
+    <insert id="insert" parameterType="com.colorfulword.smallbluewhale.domain.LostArticle">
+        INSERT INTO lost_article (publisher_id,
+        lost_user,
+        lost_user_mobile,
+        lost_article_name,
+        campus,
+        `position`,
+        lost_article_type,
+        lost_article_status,
+        lost_article_pic)
+        VALUES (#{publisherId},
+        #{lostUser},
+        #{lostUserMobile},
+        #{lostArticleName},
+        #{campus},
+        #{position},
+        #{lostArticleType},
+        0,
+        #{lostArticlePic})
+    </insert>
+
+    <update id="offline">
+        UPDATE lost_article SET
+        lost_article_status=-1
+        WHERE lost_article_id=#{lostArticleId}
+    </update>
+
+    <update id="offlineBatch"  parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update lost_article
+            <set>
+                lost_article_status=-1
+            </set>
+            where lost_article_id = ${item}
+        </foreach>
+
+    </update>
+</mapper>

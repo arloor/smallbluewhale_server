@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link type="text/css" rel="stylesheet" href="css/my_real.css" />
+    <link type="text/css" rel="stylesheet" href="css/public.css" />
+    <title>意见反馈</title>
+</head>
+<body>
+<div class="header">
+    <a onClick="window.history.go(-1)" class="back"><img src="images/back_gray.png" class="backImg" /></a>意见反馈
+</div>
+
+
+<div class="content">
+    <form id="userAuthenForm" method="post" enctype="multipart/form-data">
+    <h3>意见反馈</h3>
+    <div class="register" >
+        <label class="info" id="infoDefault">
+            <script id="studentDetail" type="text/html">          
+            <span class="sign">问题</span>            
+            <input type="text" id="feedbackQuestion" name="feedbackQuestion" class="txt" placeholder="请添加标题" />
+            <input type="hidden" id="publisherId" name="publisherId" class="txt" value="" />
+            </script>
+        </label>  
+        <label class="info">
+            <span class="sign">类型</span>
+            <select id="feedbackType" name="feedbackType" class="txt txtsc" >
+                <option disabled selected>意见类型</option>
+	            <option value="投诉">投诉</option>
+	            <option value="建议">建议</option> 
+                <option value="赞赏">赞赏</option>                
+            </select>
+        </label>        
+    </div>
+    
+    <div class="register">
+    <h3>意见描述</h3>
+    <textarea class="yj_detail" name="feedbackContent" id="feedbackContent"></textarea>
+    </div>
+        <input type="button" class="loginBtn" value="意 见 提 交"  id="feedBack" />
+    </form>
+</div>
+
+
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+<script type="text/javascript" src="js/baiduTemplate.js"></script>
+
+<script type="text/javascript">
+var studentNo = localStorage["studentNo"];
+starFun();
+function starFun(){
+    var studentNo = localStorage["studentNo"];
+    
+    if(studentNo==undefined || studentNo=="" || studentNo==null){
+        login("请先登录");
+    }else{
+        $.ajax({
+            url: websiteUrl+"/api/userInfo/searchByUserNumber?userNumber="+studentNo, //通过学号查询接口
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json;charset=UTF-8", 
+            async: true, //默认异步调用 (false：同步)
+            success: function (data) 
+            {
+                result = eval(data.data);
+                if(result.length==0){
+                    openTips("不存在此学号或无输入！");
+                    setTimeout("top.location.href = 'regsave.html'",2000);
+                }else{
+                    $("#login").hide();
+                    var bt=baidu.template;
+                    var html=bt("studentDetail",data);       
+                    document.getElementById("infoDefault").innerHTML=html; 
+                    $.ajax({
+                        url: websiteUrl+"/api/user/"+studentNo, //用户接口
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json;charset=UTF-8", 
+                        async: true, //默认异步调用 (false：同步)
+                        success: function (data) 
+                        {
+                            result = eval(data.data);
+                           $("#publisherId").val(result.userId);  
+                        },
+                        error: function (data) {
+                            openTips(data.message);
+                        }
+                    });        
+                }        
+            },
+            error: function (data) {
+                login("请先登录");
+            }
+        });
+    } 
+}
+
+
+
+ $("#feedBack").on("click",function(){
+	  var publisherId = document.getElementById("publisherId").value;
+	  var feedbackQuestion = document.getElementById("feedbackQuestion").value;
+      var feedbackType = document.getElementById("feedbackType").value;
+	  var feedbackContent = document.getElementById("feedbackContent").value;
+
+	  if(publisherId == null || publisherId == ""){
+	    openTips("服务器出错");
+	    return;
+	  }
+      if(feedbackQuestion == null || feedbackQuestion == "请添加标题"){
+        openTips("请添加标题");
+        return;
+      }
+	  if(feedbackType == null || feedbackType == "" || feedbackType == "意见类型"){
+        openTips("请选择意见类型");
+        return;
+      }
+      if(feedbackContent == null || feedbackContent == "" ){
+        openTips("请添加意见描述");
+        return;
+      }
+	
+      console.log(publisherId+"/"+feedbackQuestion+"/"+feedbackType+"/"+feedbackContent)
+var data={
+  "feedbackContent": feedbackContent,
+  "feedbackQuestion": feedbackQuestion,
+  "feedbackType": feedbackType, 
+  "publisherId": publisherId
+}
+
+    data=JSON.stringify(data);
+    $.ajax({
+        url: websiteUrl+"/api/feedback/insert", //意见反馈接口
+        dataType: "json",
+        type: "POST",
+        contentType: "application/json",
+        processData: false, 
+        async: true, //默认异步调用 (false：同步)
+        data:data,
+        success: function (data) 
+        { 
+            openTips("提交成功");
+        },
+        error: function (data) {
+            openTips(data.message);
+        }
+    });
+
+     
+   
+})
+ 
+</script>
+</body>
+</html>

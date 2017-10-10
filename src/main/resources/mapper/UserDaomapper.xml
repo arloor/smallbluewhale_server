@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.UserDao">
+    <resultMap id="userMap" type="com.colorfulword.smallbluewhale.domain.User">
+        <id property="userId" column="user_id"/>
+        <result property="userNumber" column="user_number"/>
+        <result property="weChat" column="user_wechat"/>
+        <result property="code" column="user_code"/>
+        <result property="status" column="user_status"/>
+        <!--<result property="userSchoolBuildingId" column="user_school_building_id"/>-->
+        <association property="role" javaType="com.colorfulword.smallbluewhale.domain.Role">
+            <id property="roleId" column="role_id"/>
+            <result property="roleName" column="role_name"/>
+            <result property="roleType" column="role_type"/>
+        </association>
+        <association property="schoolBuilding" javaType="com.colorfulword.smallbluewhale.domain.SchoolBuilding">
+            <id property="schoolBuildingId" column="school_building_id"/>
+            <result property="campus" column="campus"/>
+            <result property="area" column="area"/>
+            <result property="building" column="building"/>
+        </association>
+    </resultMap>
+
+    <select id="listSchoolBuildingAdmin" resultMap="userMap">
+        select u.*
+        ,r.*, school_building.*
+        from user u
+        LEFT JOIN role r on u.user_role_id=r.role_id
+        LEFT JOIN school_building on u.user_school_building_id=school_building.school_building_id
+        where u.user_role_id=2
+    </select>
+
+    <select id="findByUserNumber" parameterType="String" resultMap="userMap">
+        select u.*
+        ,r.*, school_building.*
+        from user u
+        LEFT JOIN role r on u.user_role_id=r.role_id
+        LEFT JOIN school_building on u.user_school_building_id=school_building.school_building_id
+        where user_number= #{userNumber}
+    </select>
+
+    <select id="findByWeChat" parameterType="String" resultMap="userMap">
+        select u.*
+        ,r.*, school_building.*
+        from user u
+        LEFT JOIN role r on u.user_role_id=r.role_id
+        LEFT JOIN school_building on u.user_school_building_id=school_building.school_building_id
+        where user_wechat= #{weChat}
+    </select>
+
+    <select id="get" resultMap="userMap">
+        select u.*
+        ,r.*, school_building.*
+        from user u
+        LEFT JOIN role r on u.user_role_id=r.role_id
+        LEFT JOIN school_building on u.user_school_building_id=school_building.school_building_id
+        where user_id= #{userId}
+    </select>
+
+    <insert id="insert" parameterType="com.colorfulword.smallbluewhale.domain.User">
+        INSERT INTO user (user_number,
+        user_wechat,
+        user_code,
+        user_role_id,
+        user_school_building_id)
+        VALUES (#{userNumber},
+        #{weChat},
+        #{code},
+        #{roleId},
+        #{userSchoolBuildingId})
+    </insert>
+
+    <delete id="delete">
+        DELETE FROM user
+        WHERE user_id=#{userId}
+    </delete>
+
+    <update id="update">
+        UPDATE user SET
+        user_number=#{userNumber},
+        user_wechat=#{weChat},
+        user_code=#{code},
+        user_role_id=#{roleId},
+        user_school_building_id=#{userSchoolBuildingId}
+        WHERE user_id=#{userId}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE user SET
+        user_status=#{1}
+        WHERE user_id=#{0}
+    </update>
+
+</mapper>

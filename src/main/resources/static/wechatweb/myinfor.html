@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link rel="stylesheet" type="text/css" href="css/public.css" />
+    <title>用户资料</title>
+</head>
+<body>
+<div class="header">
+    <a onclick="window.history.go(-1)" class="back"><img class="backImg" src="images/back_gray.png"></a>用户资料
+</div>
+
+<div class="content mycont" >
+<div id="userInfoId"></div>
+<script id="studentDetail" type="text/html"> 
+    <p class="studentImg">
+       <%if(data[0].headPic){%>
+        <img src="/smallbluewhale/<%=data[0].headPic%>"  />
+         <%}else {%>
+           <span>未上传头像</span>
+         <%} %>                       
+    </p>
+             
+    <h3>用户信息</h3>
+    <ul class="list" style=" margin: 0; padding: 0;">
+        <li class="listInfo">
+            <span class="listLeft">学号</span>
+            <span class="listRight"><%=data[0].userNumber%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">宿舍</span>
+            <span class="listRight"><%=data[0].schoolBuilding.campus%>-<%=data[0].schoolBuilding.area%>-<%=data[0].schoolBuilding.building%>-<%=data[0].schoolDorm.schoolDormName%>室</span>            
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">手机</span>
+            <span class="listRight"><%=data[0].mobile%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">姓名</span>
+            <span class="listRight"><%=data[0].fullName%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">性别</span>
+            <span class="listRight"><%=data[0].sex%></span>            
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">院系</span>
+            <span class="listRight"><%=data[0].schoolStudyInfo.campus%>-<%=data[0].schoolStudyInfo.department%></span>
+        </li>
+        <%if(data[0].email){%>
+        <li class="listInfo">
+            <span class="listLeft">邮箱</span>
+            <span class="listRight"><%=data[0].email%></span>            
+        </li>
+        <%}%>
+        <%if(data[0].qq){%>
+        <li class="listInfo">
+            <span class="listLeft">QQ</span>
+            <span class="listRight"><%=data[0].qq%></span>            
+        </li>
+        <%}%>
+    </ul>
+    </script>
+    <ul class="list" style=" margin: 0;">
+        <li class="listInfo">
+            <span class="listLeft" >微信</span>
+            <span class="listRight" id="weChat"></span>
+        </li>
+        
+    </ul>
+    <a href="myinforModify.html" class="loginBtn" style="display: block;  overflow: hidden; line-height: 45px;">信息修改</a>
+</div>
+
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/baiduTemplate.js"></script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+
+<script type="text/javascript">
+var studentNo = localStorage["studentNo"]; 
+starFun();
+function starFun(){
+    var studentNo = localStorage["studentNo"];
+     
+    if(studentNo==undefined){
+        login("请先登录");
+    }else{
+        $.ajax({
+            url: websiteUrl+"/api/userInfo/searchByUserNumber?userNumber="+studentNo, //通过学号查询接口
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json;charset=UTF-8", 
+            async: true, //默认异步调用 (false：同步)
+            success: function (data) 
+            {
+                result = eval(data.data);
+                console.log(result)
+                if(result.length==0){
+                    openTips("不存在此学号或无输入！");
+                    setTimeout("top.location.href = 'regsave.html'",2000);
+                }else{
+                    $("#login").hide();                  
+                    var bt=baidu.template;
+                    //最简使用方法
+                    var html=bt("studentDetail",data);
+                    //渲染        
+                    document.getElementById("userInfoId").innerHTML=html;
+                    $.ajax({
+                        url: websiteUrl+"/api/user/"+studentNo, //用户接口
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json;charset=UTF-8", 
+                        async: true, //默认异步调用 (false：同步)
+                        success: function (data) 
+                        {
+                            result = eval(data.data);
+                           $("#weChat").text(result.weChat);  
+                        },
+                        error: function (data) {
+                            openTips(data.message);
+                        }
+                    });          
+                }        
+            },
+            error: function (data) {
+                login("请先登录");
+            }
+        });
+    } 
+}
+
+
+</script>
+</body>
+</html>
+

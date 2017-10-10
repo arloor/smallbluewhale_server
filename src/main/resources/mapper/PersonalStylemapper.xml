@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.PersonalStyleDao">
+    <resultMap id="list" type="com.colorfulword.smallbluewhale.domain.PersonalStyle">
+        <id property="personalStyleId" column="personal_style_id"/>
+        <result property="userNumber" column="personal_style_user_number"/>
+        <result property="userName" column="personal_style_user_name"/>
+        <result property="mobile" column="personal_style_mobile"/>
+        <result property="content" column="personal_style_content" />
+        <result property="campus" column="personal_style_campus"/>
+        <result property="type" column="personal_style_type"/>
+        <result property="buildingId" column="personal_style_building_id"/>
+        <result property="pics" column="personal_style_pics"/>
+    </resultMap>
+
+    <select id="listByCampusAndType" resultMap="list">
+        SELECT personal_style.*
+        FROM personal_style
+        WHERE personal_style_campus=#{0}
+        AND personal_style_type=#{1}
+        ORDER BY personal_style_building_id ASC;
+    </select>
+
+    <insert id="insert" parameterType="com.colorfulword.smallbluewhale.domain.SiteNavigation">
+        INSERT INTO personal_style (personal_style_user_number,
+        personal_style_user_name,
+        personal_style_mobile,
+        personal_style_content,
+        personal_style_campus,
+        personal_style_type,
+        personal_style_building_id,
+        personal_style_pics)
+        VALUES (#{userNumber},
+        #{userName},
+        #{mobile},
+        #{content},
+        #{campus},
+        #{type},
+        #{buildingId},
+        #{pics})
+    </insert>
+
+    <update id="update">
+        UPDATE personal_style SET
+        personal_style_user_number=#{userNumber},
+        personal_style_user_name=#{userName},
+        personal_style_mobile=#{mobile},
+        personal_style_content=#{content},
+        personal_style_campus=#{campus},
+        personal_style_type=#{type},
+        personal_style_building_id=#{buildingId},
+        personal_style_pics=#{pics}
+        WHERE personal_style_id=#{personalStyleId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM personal_style
+        WHERE personal_style_id=#{personalStyleId}
+    </delete>
+
+    <select id="get" resultMap="list">
+        SELECT personal_style.*
+        FROM personal_style
+        WHERE personal_style_id=#{personalStyleId}
+    </select>
+</mapper>

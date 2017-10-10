@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link type="text/css" rel="stylesheet" href="css/my_real.css" />
+    <link type="text/css" rel="stylesheet" href="css/public.css" />
+    <title>失物发布</title>
+</head>
+<body>
+<div class="header">
+    <a onclick="window.history.go(-1)" class="back"><img src="images/back_gray.png" class="backImg" /></a>失物发布
+</div>
+<div class="content">
+    <form id="userAuthenForm" method="post" action="/smallbluewhale/api/lostArticle/insert" enctype="multipart/form-data" >
+   <h3>默认信息</h3>
+    <div class="register">
+        <label class="info" id="infoDefault">
+            <script id="studentDetail" type="text/html">
+            <span class="sign">提交人</span>            
+            <input type="text" id="publishername" name="publishername" class="txt" value="<%=data[0].fullName%>" style=" background: #fff;" disabled/>
+            <input type="hidden" id="publisherId" name="publisherId" class="txt" value="" />
+            </script>
+        </label>
+        <label class="info">
+            <span class="sign">提交时间</span>
+            <input type="text" id="publishTime" name="publishTime" class="txt" value="" />
+        </label>
+     </div>
+     <h3>失物信息</h3>
+     <div class="register">   
+        <label class="info">
+            <span class="sign">丢失人</span>
+            <input type="text" id="lostOwner" name="lostUser" class="txt" placeholder="（选填）" value="" maxlength="200"/>
+        </label>
+        <label class="info">
+            <span class="sign">联系方式</span>
+            <input type="number" id="lostMobile" name="lostUserMobile" class="txt" placeholder="（选填）" value="" maxlength="11"/>
+        </label>
+        <label class="info">
+            <span class="sign">物品</span>
+            <input type="text" id="goods" name="lostArticleName" class="txt" placeholder="（必填）" value="" maxlength="20"/>
+        </label>
+        <label class="info">
+            <span class="sign">拾取位置</span>
+            <input type="text" id="address" name="position" class="txt" placeholder="（必填）" value="" />
+        </label>
+        </div>
+        <div class="register">   
+        <label class="info">
+            <span class="sign">校区</span>
+            <select id="campusName" name="campus" class="txt txtsc">
+                <option disabled selected>请选择校区</option>
+	            <option value="仙林">仙林校区</option>
+	            <option value="鼓楼">鼓楼校区</option>
+                
+            </select>
+        </label>
+        <label class="info">
+            <span class="sign">分类</span>
+            <select id="lostType" name="lostArticleType" class="txt txtsc">
+                <option disabled selected>物品分类</option>
+                <option value="卡证">卡证</option>
+                <option value="书籍">书籍</option>
+                <option value="衣包">衣包</option>
+                <option value="其他">其他</option>
+                
+            </select>
+        </label>
+        <div class="infoPic">
+            <span class="sign">上传图片</span>
+            <span class="tips">点击下方图片区域上传</span>
+            <p class="img">               
+                <input id="file1" name="file1" type="file" class="file"/>
+                <img src="images/add.png" class="file0" />
+            </p>
+        </div>
+    </div>
+    <input type="submit" class="loginBtn" value="失 物 发 布" id="lostAdd" />
+    </form>
+</div>
+
+
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/baiduTemplate.js"></script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+<script type="text/javascript" src="js/jquery-form.js"></script>
+<script type="text/javascript">
+var studentNo = localStorage["studentNo"];
+starFun();
+function starFun(){
+    var studentNo = localStorage["studentNo"];
+     
+    if(studentNo==undefined || studentNo=="" || studentNo==null){
+        login("请先登录");
+    }else{
+        $.ajax({
+            url: websiteUrl+"/api/userInfo/searchByUserNumber?userNumber="+studentNo, //通过学号查询接口
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json;charset=UTF-8", 
+            async: true, //默认异步调用 (false：同步)
+            success: function (data) 
+            {
+                result = eval(data.data);
+                
+                if(result.length==0){
+                    openTips("不存在此学号或无输入！");
+                    setTimeout("top.location.href = 'regsave.html'",2000);
+                }else{
+                    $("#login").hide();
+                    var bt=baidu.template;
+                    var html=bt("studentDetail",data);       
+                    document.getElementById("infoDefault").innerHTML=html;
+
+                     $.ajax({
+                        url: websiteUrl+"/api/user/"+studentNo, //用户接口
+                        dataType: "json",
+                        type: "GET",
+                        contentType: "application/json;charset=UTF-8", 
+                        async: true, //默认异步调用 (false：同步)
+                        success: function (data) 
+                        {
+                            result = eval(data.data);
+                           $("#publisherId").val(result.userId);  
+                        },
+                        error: function (data) {
+                            openTips(data.message);
+                        }
+                    }); 
+
+                }        
+            },
+            error: function (data) {
+                login("请先登录");
+            }
+        });
+    } 
+}
+
+
+var myDate = new Date();
+var time=myDate.toLocaleDateString();
+var publishTime=document.getElementById("publishTime");
+    publishTime.value=time;
+
+//    图片预览
+    $(".file").change(function(){
+        var objUrl = getObjectURL(this.files[0]) ;
+        if (objUrl) {
+            $(this).next(".file0").attr("src", objUrl) ;
+        }
+    });
+
+
+    function getObjectURL(file) {
+        var url = null ;
+        if (window.createObjectURL!=undefined) { // basic
+            url = window.createObjectURL(file) ;
+        } else if (window.URL!=undefined) { // mozilla(firefox)
+            url = window.URL.createObjectURL(file) ;
+        } else if (window.webkitURL!=undefined) { // webkit or chrome
+            url = window.webkitURL.createObjectURL(file) ;
+        }
+        return url ;
+    }
+    
+    function dataURItoBlob(base64Data) {
+      var byteString; if (base64Data.split(',')[0].indexOf('base64') >= 0) byteString = atob(base64Data.split(',')[1]); elsebyteString = unescape(base64Data.split(',')[1]); var mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0]; var ia = new Uint8Array(byteString.length); for (var i = 0; i < byteString.length; i++) { ia[i] = byteString.charCodeAt(i); } return new Blob([ia], {type:mimeString}); 
+    }
+
+$(document).ready(function() {
+
+ var check = {
+  beforeSubmit: CheckhdFormg,// ajax提交之前的处理
+  success:  success// 处理之后的处理
+ };
+
+ $('#userAuthenForm').submit(function() {
+  $(this).ajaxSubmit(check);
+  return false;//非常重要，如果是false，则表明是不跳转在本页上处理，也就是ajax，如果是非false，则传统的form跳转。
+ });
+
+
+function success(){
+
+    openTips("发布成功");
+    setTimeout("top.location.href = 'lost.html'",2000);
+
+}
+
+function CheckhdFormg(formData){ 
+
+  if(formData[0].value== null || formData[0].value == ""){
+    openTips("服务器出错，请重试！");
+    return false;
+  }
+
+  if(formData[4].value == null || formData[4].value == ""){
+    openTips("请输入物品");
+    return false;
+  }
+  if(formData[5].value == null || formData[5].value == ""){
+    openTips("请输入拾取位置");
+    return false;
+  }
+  if(formData[6].value == "请选择校区"){
+    openTips("请选择校区");
+    return false;
+  }
+  if(formData[7].value == "物品分类"){
+    openTips("请选择物品分类");
+    return false;
+  }
+ 
+
+}
+
+})
+
+
+</script>
+</body>
+</html>

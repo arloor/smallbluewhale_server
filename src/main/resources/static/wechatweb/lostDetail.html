@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0 ,user-scalable=no" />
+    <link rel="stylesheet" type="text/css" href="css/public.css" />
+    <title>详情信息</title>
+</head>
+<body>
+<div class="header">
+    <a onclick="window.history.go(-1)" class="back"><img class="backImg" src="images/back_gray.png"></a>详情信息
+</div>
+
+<div id="img" class="imgdetial">
+</div>
+<div id="addContent"></div>
+<script id="Detail" type="text/html">
+<div class="content">
+    <h3>失物信息</h3>
+    <ul class="list">
+        <li class="listInfo">
+            <span class="listLeft">失物名称</span>
+            <span class="listRight"><%=data[index].lostArticleName%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">上传时间</span>
+            <span class="listRight"><%=new Date(data[index].publishTime).Format("yyyy-MM-dd")%></span>            
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">拾取地点</span>
+            <span class="listRight"><%=data[index].campus%>--<%=data[index].position%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">拾取人</span>
+            <% if(data[index].lostUser!=""){%>
+            <span class="listRight"><%=data[index].lostUser%></span>
+            <%}else{%>
+            <span class="listRight">暂无</span>
+            <%}%>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">联系方式</span>
+            <% if(data[index].lostUserMobile!=""){%>
+            <span class="listRight"><%=data[index].lostUserMobile%></span>
+            <%}else{%>
+            <span class="listRight">暂无</span>
+            <%}%>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">物品分类</span>
+            <span class="listRight"><%=data[index].lostArticleType%></span>
+        </li>
+        <li class="listInfo">
+            <span class="listLeft">领取状态</span>
+            <% if(data[index].lostArticleStatus==0){%>
+            <span class="listRight">未领取</span>
+            <%}else{%>
+            <span class="listRight">已领取</span>
+            <%}%>
+        </li>
+    </ul>
+</div>
+</script>
+<script type="text/javascript" src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/simpleTips_wap.js"></script>
+<script type="text/javascript" src="js/baiduTemplate.js"></script>
+<script type="text/javascript">
+    function GetQueryString(name)
+    {
+         var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+         var r = window.location.search.substr(1).match(reg);
+         if(r!=null)return  decodeURI(r[2]); return null;
+    }
+    var index=GetQueryString("index");
+    var campus=GetQueryString("campus");
+    $.ajax({
+    url: websiteUrl+"/api/lostArticle/listByCampus?campus="+campus, //用户详情接口
+    dataType: "json",
+    type: "GET",
+    contentType: "application/json;charset=UTF-8", 
+    async: true, //默认异步调用 (false：同步)
+    success: function (data) 
+    {
+        data = eval(data);
+        
+        var pic=data.data[index].lostArticlePic;
+
+        if(pic){
+            var img=replaceString(pic);
+            var imgs='<img src="'+websiteUrl+'/'+img[0]+'" style="width:100%;">';                         
+        }else{
+            var imgs='<p style="text-align:center;background:#fff;padding:4% 0;color:#666;">没有上传图片！</p>';            
+        }
+        $('#img').append(imgs);
+        
+        var bt=baidu.template;
+        //最简使用方法
+        var html=bt("Detail",data);
+        //渲染
+                
+        document.getElementById("addContent").innerHTML=html; 
+           
+    },
+    error: function (data) {
+        openTips(data.message);
+        
+    }
+}); 
+
+function getQueryString(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    var r = window.location.search.substr(1).match(reg);
+    if ( r != null ){
+       return unescape(r[2]);
+    }else{
+       return null;
+    } 
+ }   
+</script>
+</body>
+</html>
+

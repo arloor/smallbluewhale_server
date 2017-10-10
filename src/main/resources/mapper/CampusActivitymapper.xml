@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.colorfulword.smallbluewhale.dao.CampusActivityDao">
+    <resultMap id="list" type="com.colorfulword.smallbluewhale.domain.CampusActivity">
+        <id property="campusActivityId" column="campus_activity_id"/>
+        <result property="campusActivityName" column="campus_activity_name"/>
+        <result property="campusActivityDetail" column="campus_activity_detail"/>
+        <result property="campusActivityCampus" column="campus_activity_campus"/>
+        <result property="campusActivityTime" column="campus_activity_time" />
+        <result property="campusActivityStatus" column="campus_activity_status"/>
+        <result property="pics" column="campus_activity_pics"/>
+    </resultMap>
+    <select id="listByCampus" resultMap="list">
+        SELECT campus_activity.*
+        FROM campus_activity
+        WHERE campus_activity_campus=#{0}
+        AND campus_activity_status=#{1}
+        ORDER BY campus_activity_id DESC;
+    </select>
+
+    <insert id="insert" parameterType="com.colorfulword.smallbluewhale.domain.SiteNavigation">
+        INSERT INTO campus_activity (campus_activity_name,
+        campus_activity_detail,
+        campus_activity_campus,
+        campus_activity_time,
+        campus_activity_pics)
+        VALUES (#{campusActivityName},
+        #{campusActivityDetail},
+        #{campusActivityCampus},
+        #{campusActivityTime},
+        #{pics})
+    </insert>
+
+    <update id="update">
+        UPDATE campus_activity SET
+        campus_activity_name=#{campusActivityName},
+        campus_activity_detail=#{campusActivityDetail},
+        campus_activity_campus=#{campusActivityCampus},
+        campus_activity_time=#{campusActivityTime},
+        campus_activity_pics=#{pics}
+        WHERE campus_activity_id=#{campusActivityId}
+    </update>
+
+    <update id="offline">
+        UPDATE campus_activity SET
+        campus_activity_status=-1
+        WHERE campus_activity_id=#{campusActivityId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM campus_activity
+        WHERE campus_activity_id=#{campusActivityId}
+    </delete>
+
+    <select id="get" resultMap="list">
+        SELECT campus_activity.*
+        FROM campus_activity
+        WHERE campus_activity_id=#{campusActivityId}
+    </select>
+</mapper>
